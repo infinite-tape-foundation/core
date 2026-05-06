@@ -50,13 +50,24 @@
     /* Subtract 43 from Temp [3] */
     > > 
     +++++++ [ > ++++++ < - ]
-    < 
+    <
     
     /* If result is 0, it was '+'. Execute VDP increment. */
-    /* Note: The following logic must be wrapped in an 'If Zero' pattern */
+    /* The 'If Zero' pattern here requires that the cell be exactly 0 to enter the block, 
+       which in BF means we must wrap the logic in a way that triggers on zero. 
+       Since [ ] skips if zero, we use a flag cell. */
     
-    /* [Implementation of the match-and-execute block] */
-
+    /* Check if Temp [3] is 0 */
+    [ - > + < ] // If not zero, move 1 to Flag [4]
+    > [
+        /* Not a '+', clear flag and skip action */
+        - 
+    ] <
+    
+    /* This section is conceptually where the '+' action happens: 
+       Increment value at VDP. To do this in Phase I, we simulate 
+       the data pointer by moving relative to SourceBase. */
+    
     /* --- STEP 3: IP INCREMENT ---
      * Advance the Instruction Pointer for the next cycle. */
     < < < <
