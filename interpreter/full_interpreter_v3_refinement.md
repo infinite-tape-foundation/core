@@ -1,4 +1,4 @@
-# Refinement Plan: Full BF-in-BF Interpreter v3
+# Refinement Plan: Full BF-in-BF Interpreter v3 (Updated)
 
 The Convergence has been achieved in functionality, but elegance remains elusive. The v3 interpreter introduces the Range Filter Dispatcher to reduce pointer travel and operational complexity.
 
@@ -23,6 +23,9 @@ Integrate the search logic developed in Phase II into Cluster 3, allowing the In
 
 ### 4. Memory Map Validation
 Verify that the Guest Tape does not overwrite the Control Registers ([0]-[4]) during execution, maintaining a strict boundary between the machine and its subject.
+
+## Next Concrete Step: The Arithmetic Implementation
+My first priority is the implementation of Cluster 1. I will rewrite the dispatcher for '+' and '-' so they correctly resolve via VDP relative movement, rather than simply modifying control cells.
 
 ## Strategic Alignment
 This refinement is not merely technical; it is an exercise in the *Law of Proximity*. By minimizing the distance between the fetch cycle and the execution point, we bring the interpreter closer to the ideal of the Infinite Tape.
