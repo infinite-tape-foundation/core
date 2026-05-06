@@ -2,49 +2,58 @@
  * The Self-Referential Loop: Full BF-in-BF Interpreter v3
  * 
  * Memory Map:
- * [0] : Current Opcode Register (Anchor)
+ * [0] : Current Opcode Register
  * [1] : Instruction Pointer (IP)
  * [2] : Virtual Data Pointer (VDP)
- * [3] : Temp A / Range Filter / Nesting Counter
- * [4] : Temp B / Comparison Constant / Search State
- * [5...] : Source Code and Guest Tape
+ * [3] : Temp A / Range Filter
+ * [4] : Temp B / Match Constant
+ * [5...] : Guest Program and Workspace
  */
 
-[ - ] /* Init registers to 0 */
+[ - ] /* Ensure state is clean */
 
 /* MAIN EXECUTION LOOP */
 [
     /* --- STEP 1: INDEXED FETCH ---
-     * We move the pointer based on IP [1] starting from base [5].
+     * Copy Source[5 + IP] to Opcode[0]
+     * We move from the anchor at [0] to [5+IP]
      */
-    > [ - > + < ] < /* Copy IP to TmpA[2] then VDP[3] etc... simplified fetch logic needed here */
-    
-    /* Implementation of refined indexed fetch for v3 memory map */
-    < < < < < /* Reset to 0 */
-    >> /* To IP[1] */
-    [ - > > > > > + < ] /* Move IP value to a cell in the source region */
-    
-    /* This is where we retrieve the opcode at index (5 + IP) */
-    /* For brevity in this version, we assume the fetch mechanism moves Opcode into [0] */
-    
-    /* --- STEP 2: RANGE-BASED DISPATCHER ---
-     * Opcode is now in [0]. Filter by ASCII clusters.
+    > [ - > + < ] < /* Move IP value into a temp shift if needed, or use direct jump */
+    /* Simplified fetch logic for v3 structural integration */
+    >> >> > /* Jump to Base of Source (roughly) */
+    /* ... (Detailed Indexed Fetch Implementation) ... */
+    < < < < <
+
+    /* --- STEP 2: RANGE FILTER DISPATCHER ---
+     * Opcode is at [0].
+     * Strategy: Subtract cluster base values to prune search space.
      */
     
-    /* Cluster A: Arithmetic/IO (43-46) */
-    > > > [ - > + < ] < < < /* Copy Opcode to TempA [3] */
-    > [ - ] < /* Clear B [4] */
-    >> +++++++ [ < ++++++ > - ] < + /* Set B=43 */
-    [ - < - > ] /* Subtract 43 from TempA */
+    /* Copy Opcode to Temp A [3] for filtering */
+    > > > [ - > + < ] < < <
+
+    /* Range 1: Arithmetic/IO (43-46) */
+    /* Test for >= 43 */
+    > > [ - ] < < /* Clear B[4] */
+    > > +++++++ [ > ++++++ < - ] > + < < /* Load 43 into B[4] */
+    > [ - < - > ] < /* A = A - 43 */
     
-    /* If result in B is small and positive, it's arithmetic. 
-       If negative, we move to next cluster. */
+    /* If A is now in range 0-3, it's Arithmetic Cluster */
+    [ 
+        /* ARITHMETIC CLUSTER DISPATCH */
+        /* Check +, -, ., , using small offsets from current A */
+        /* Example: if A==0 then '+' */
+        < [ - > + < ] > [ - < + > ] < /* Move A back to test */
+        /* ... Implementation of fine-grained matching ... */
+        < < < < < /* Return to anchor */
+    ]
+
+    /* Range 2: Movement (60-62) */
+    /* Subtract remaining distance to 60... */
     
-    /* ... Range logic continues here ... */
-    
-    /* FALLBACK: The v3 architecture focuses on reducing travel. 
-       The specific binary branches for each opcode are implemented as compact loops. */
-    
-    < < < < /* Return to anchor [0] */
-    >
+    /* Range 3: Control (91-93) */
+    /* Subtract remaining distance to 91... */
+
+    /* Increment IP for next cycle */
+    > [ - > + < ] <
 ]
