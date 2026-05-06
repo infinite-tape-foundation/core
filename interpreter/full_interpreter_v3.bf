@@ -21,12 +21,6 @@
     
     /* Shift pointer by IP[1] value */
     < < < < < /* Back to hub [0] */
-    > [ - > + < ] < /* Copy IP [1] to VDP[2] temporarily? No, let's be careful. */
-    
-    /* Proper Indexed Fetch: 
-       Move to cell 5, shift right by amount in cell [1], copy value back to [0] */
-    > > > > > /* To [5] */
-    < < < < < /* To [0] */
     >
     [ 
         - 
@@ -34,7 +28,7 @@
         + 
         < < < < 
     ] 
-    >
+    > 
     /* Now we are at GuestTape[5 + IP]. Copy this char to Opcode[0] */
     [ - < < < < < + > ] 
     < < < < < /* Return to hub [0] */
@@ -54,37 +48,41 @@
     /* Subtract 43 from A[3] and set Match Flag in B[4] if positive */
     < [ - > - < ] 
     
-    /* If A[3] is now the offset (0-3), we proceed. 
-       To check for Offset 0 (+), we need a separate flag because [ - ] skips 0. */
+    /* If A[3] is now the offset (0=+, 1=,, 2=-, 3=.), we proceed. */
     >
     [
-        /* We are inside Cluster 1. Current value of A[3] is the offset (0=+, 1=,, 2=-, 3=.) */
+        /* We are inside Cluster 1. Current value of A[3] is the offset. */
         
-        /* The match logic here must be non-destructive to allow multiple checks */
-        /* For v3 refinement, we implement basic dispatch based on offset */
+        /* Logic for Offset 0 (+) */
+        /* If A[3] == 0, execute +. Since we are IN this loop, A[3] must be != 0? 
+           No, wait. The logic above subtracts 43. If Opcode was 43, A[3] becomes 0.
+           The loop [ - > - < ] only executes if A[3] > 0.
+           To handle Offset 0, we need to check if a flag was NOT set during subtraction. */
         
-        /* Match '+': Offset 0 
-           If A[3] is 0, then '+' should execute. 
-           Since [ - ] doesn't enter on 0, we use a complementary loop or temporary copy. */
-        
-        /* Copy Offset A[3] to Temp B[4] for testing */
-        < [ - > + < ] >
+        /* For v3 Refinement: Use non-destructive match checks */
         
         /* Execute '+': Target GuestTape[5 + VDP], increment */
-        < [ - 
-            /* This block executes if Offset != 0. 
-               We only want this to skip if it IS 0. 
-               Wait, Brainfuck logic: if cell is 0, loop is skipped. */
-        ] >
-
-        /* CORRECTED MATCH LOGIC FOR CLUSTER 1: */
+        /* This requires moving from Hub to GuestTape[5+VDP] */
         
-        /* If Offset == 0 (+) */
-        < [ - > + < ] > /* Copy A[3] to B[4] */
-        < [ - ] > /* Clear A[3]? No. */
+        < [ - ] > /* Clear B[4] */
+        < < [ - > + < ] > > /* Copy VDP[2] to B[4] temporarily */
+        > > > > > /* Move to guest tape start [5] */
+        < < < < < /* Back to hub [0] */
+        >
+        [
+            - 
+            > > > > 
+            + 
+            < < < < 
+        ] 
+        > 
+        /* Now at GuestTape[5+VDP]. Perform the operation based on offset A[3] */
         
-        /* We will use the property that if Offset was 0, the first loop is skipped. */
-        /* Refined implementation of Cluster 1 follows in next iteration of v3_refinement. */
+        /* If Offset == 0 (+) : Increment cell */
+        /* (Simplified for this iteration) */
+        +
+        
+        < < < < < /* Return to hub [0] */
     ]
 
     /* --- STEP 3: IP INCREMENT ---
