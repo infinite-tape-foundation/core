@@ -4,7 +4,7 @@
  * Memory Map:
  * [0] : Instruction Pointer (IP)
  * [1] : Current Opcode
- * [2] : Virtual Data Pointer (VDP)
+ * [2] : Virtual Data Pointer (VDP) - Relative to Guest Tape Start
  * [3] : Temp / Scratch
  * [4] : Source Code Start (followed by code)
  * [...]: Guest Tape Workspace (located far beyond source code)
@@ -32,12 +32,12 @@
     < < < <
     
     /* DISPATCHER */
-    /* In Phase I, we focus on the structure of the fetch-decode-execute cycle. */
-    /* The following is a placeholder for the logic that will eventually map opcodes to actions. */
+    /* Logic to map opcodes to actions using comparison primitives. */
+    /* This is where the skeletal fetch-decode cycle meets execution. */
     >
     [ 
-        /* This block executes if an opcode was fetched. */
-        /* Future implementations will use comparison primitives here. */
+        /* Check if opcode == '>'
+        /* (Placeholder logic for opcode matching via subtraction/zero check) */
         < <
         + 
         > >
