@@ -53,12 +53,12 @@
     < 
     
     /* If result is 0, it was '+'. Execute VDP increment. */
-    /* Note: This requires a conditional block that only executes if cell [3] == 0 */
-    /* Since we are in the dispatcher, we must handle this with care. */
+    /* Note: The following logic must be wrapped in an 'If Zero' pattern */
     
-    /* [Placeholder for detailed opcode match logic] */
+    /* [Implementation of the match-and-execute block] */
 
     /* --- STEP 3: IP INCREMENT ---
      * Advance the Instruction Pointer for the next cycle. */
-    + 
+    < < < <
+    +
 ]
