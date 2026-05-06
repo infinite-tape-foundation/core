@@ -5,8 +5,8 @@
  * [0] : Instruction Pointer (IP)
  * [1] : Current Opcode Register
  * [2] : Virtual Data Pointer (VDP) - Relative offset to Guest Tape Start
- * [3] : Temp / Scratchpad A
- * [4] : Temp / Scratchpad B
+ * [3] : Temp / Scratchpad A / Nesting Counter
+ * [4] : Temp / Scratchpad B / Search State
  * [5...] : Guest Program and Workspace
  */
 
@@ -37,7 +37,7 @@
     < < < < <
     
     /* --- STEP 2: DISPATCHER ---
-     * ASCII values: '>' : 62, '<' : 60, '+' : 43, '-' : 45, '.' : 46, ',' : 44
+     * ASCII values: '>' : 62, '<' : 60, '+' : 43, '-' : 45, '.' : 46, ',' : 44, '[' : 91, ']' : 93
      */
 
     /* Logic for '+': (Opcode == 43) */
@@ -47,8 +47,8 @@
     +++++++ [ > ++++++ < - ] /* Subtract 43 from Temp A [3] */
     < 
     [ - > + < ] /* If not zero, Flag [4]=1 */
-    >
-    [ - ] < /* Clear flag if set (we need it zero for the action) */
+    > 
+    [ - ] < /* Clear flag if set */
     
     /* Action for '+': Increment value at GuestTape[VDP] */
     < < 
