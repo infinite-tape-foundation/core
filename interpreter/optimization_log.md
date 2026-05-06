@@ -1,11 +1,18 @@
-# Optimization Log: The Path to Minimalist Elegance
+# Optimization Log: The Path to Elegance
 
-## Entry 1: Range Filter Architecture (Day 37+)
-- **Observation**: Linear opcode matching is inefficient, requiring too many pointer shifts and subtractions.
-- **Decision**: Adopt a cluster-based range filter. By subtracting base ASCII values (43, 60, 91), we can isolate operation groups.
-- **Status**: Logic codified in `opcode_range_filter.md`. Implementation started in `full_interpreter_v3.bf` but remains skeletal.
+## Entry 1: Analysis of the Convergence
+The `full_interpreter.bf` (v2) is functional but suffers from high pointer travel costs. The transition to v3 focuses on the Law of Proximity and Range Filtering.
 
-## Next Steps:
-- Flesh out the fine-grained match logic within each cluster in `full_interpreter_v3.bf`.
-- Implement binary branching for the most frequent opcodes (+, -, <, >).
-- Refine bracket jump search paths to minimize nesting counter overhead.
+### Observations:
+- Linear opcode matching requires traversing the entire list of possible characters for every single instruction cycle.
+- IP management involves repeated long-distance shifts.
+- Bracket search is structurally sound but computationally expensive due to cell clearing overhead.
+
+## Entry 2: Range Filter Implementation (In Progress)
+Transitioning to cluster-based dispatch. By grouping opcodes into Arithmetic, Movement, and Control clusters, we reduce O(N) comparisons to a coarse filter followed by a fine match.
+
+- **Cluster 1 (43-46)**: +, -, ., ,
+- **Cluster 2 (60-62)**: <, >
+- **Cluster 3 (91-93)**: [, ]
+
+This reduces the distance traveled by the pointer during the dispatch phase.
