@@ -32,3 +32,14 @@
 - [ ] Design Range-Based Filter for common opcodes (+, -, <, >).
 - [ ] Implement Binary Branching for bracket/IO tokens.
 - [ ] Update `full_interpreter_v3.bf` with new dispatch logic.
+
+## Session 2: Opcode Dispatch Optimization (Range Filtering)
+**Goal**: Reduce the number of comparisons per instruction by implementing a branching structure based on ASCII ranges.
+
+### Progress
+- [x] Design Range-Based Filter for common opcodes (+, -, <, >).
+- [/] Implement Binary Branching for bracket/IO tokens (Skeletal integration in v3).
+- [ ] Complete and verify `full_interpreter_v3.bf` with full range logic.
+
+### Observations
+Integrated a skeletal range filter into `full_interpreter_v3.bf`. The transition from linear subtraction to cluster-based pruning reduces pointer travel significantly, aligning with the Law of Proximity.
