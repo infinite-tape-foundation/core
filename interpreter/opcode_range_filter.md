@@ -1,31 +1,30 @@
-# Opcode Range Filter: Logic and Implementation
+# Opcode Range Filtering Logic (v3)
 
-## 1. The Problem
-Linear opcode matching (subtracting a constant and checking for zero) requires $O(N)$ comparisons where $N$ is the number of supported opcodes. For the full BF set, this involves significant pointer travel back and forth between the Opcode Register and temporary cells.
+To avoid linear subtraction checks for every possible Brainfuck opcode, we group them into clusters based on their ASCII values.
 
-## 2. The Solution: Cluster Pruning
-By grouping opcodes into ASCII ranges (clusters), we can reduce the search space to $O(\log N)$ or constant time per cluster.
+## 1. The Clusters
 
-### Cluster Definitions
-| Cluster | Opcodes | ASCII Range | Base Offset |
-| :--- | :--- | :--- | :--- |
-| **Arithmetic/IO** | `+`, `-`, `.`, `,` | 43 - 46 | 43 |
-| **Movement** | `<`, `>` | 60 - 62 | 60 |
-| **Control** | `[`, `]` | 91 - 93 | 91 |
+| Cluster | ASCII Range | Tokens |
+| :--- | :--- | :--- |
+| **Arithmetic/IO** | 43 - 46 | `+` (43), `,` (44), `-` (45), `.` (46) |
+| **Movement** | 60 - 62 | `<` (60), `>` (62) |
+| **Control** | 91 - 93 | `[` (91), `]` (93) |
 
-## 3. Filtering Algorithm
-1. **Copy** current opcode $C$ to Temp A.
-2. **Subtract** the base offset of the first cluster ($B_1 = 43$).
-3. If result $\ge 0$ and $< 4$, it belongs to the Arithmetic/IO cluster.
-   - Use a secondary check (e.g., subtract $0, 1, 2, 3$) to identify the specific token.
-4. If not in range, **subtract** the remaining distance to $B_2 = 60$.
-5. Repeat for $B_3 = 91$.
+## 2. The Filter Algorithm
 
-## 4. Implementation Details in BF
-To implement "If $X \ge 0$ and $X < 4$", we use a temporary cell to count down from 4 while $X$ is non-zero. If $X$ reaches zero before the counter does, the value was within $[0, 3]$.
+1. **Load Opcode**: Copy the current instruction to a temporary cell (`TempA`).
+2. **Coarse Pruning**:
+    - Subtract 43 from `TempA`. 
+    - If the result is $0 \le x \le 3$, dispatch to **Arithmetic/IO** logic.
+    - Otherwise, restore/re-copy and subtract 60.
+    - If the result is $0 \le x \le 2$, dispatch to **Movement** logic.
+    - Otherwise, subtract 91.
+    - If the result is $0 \le x \le 2$, dispatch to **Control** logic.
+3. **Fine-Grained Dispatch**:
+    - Within each cluster, use simple subtraction or comparison against small constants (0, 1, 2, 3) to determine the exact token.
 
-### Range Check Primitive
-`[ - > + < ]` // Move X to Temp
-`> ++++ [ < - > - < ]` // Compare against 4
+## 3. Implementation Detail: Safe Subtraction
 
-This logic allows `full_interpreter_v3` to bypass entire sections of the dispatcher, adhering to the **Law of Proximity** and reducing total pointer shifts per instruction cycle.
+Since Brainfuck cells wrap, we must be careful with negative results. We use a helper cell to ensure that if we subtract a value larger than the opcode, the resulting large wrapped value doesn't accidentally trigger a range match.
+
+*Tactic*: Check for "underflow" by verifying the sign of the operation before proceeding to the next cluster.
