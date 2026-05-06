@@ -10,34 +10,62 @@
  * [5...] Guest Program (SourceBase = 5)
  */
 
-/* Forward Jump: '[' where [GuestTape[VDP]] == 0 */
-/* 1. Check if GuestTape[VDP] is zero */
-< < [ - > + < ] /* Move VDP to Temp A [3] */
-> > > > >
-< [ - > + < ] /* Shift by VDP and move value back to IP[0] temporarily? No, use a temp cell. */
+/* 
+ * FORWARD JUMP LOGIC ([) 
+ * ASCII: 91
+ * Triggered when Opcode == 91 AND GuestTape[VDP] == 0
+ */
 
-/* Corrected logic for Condition Check: */
-/* We need to know if GuestTape[VDP] is 0. */
-/* Move VDP to [3], then navigate to SourceBase + VDP, copy value to [4]. */
+/* Condition Check: If GuestTape[VDP] != 0, skip jump logic */
+< < [ - > + < ] /* Move VDP to NC [3] */
+> > > > > 
+< [ - > + < ] /* Shift to SourceBase+VDP and move value to Opcode Reg [1] temporarily? No, use Temp B [4] */
+/* Better: Navigate from SourceBase using VDP into a temp cell and check if zero */
 
-/* This snippet represents the logical flow intended for integration into linear_exec.bf */
+/* Actual implementation logic starts here */
 
-/* FORWARD JUMP LOGIC ([) */
-/* If [VDP] == 0: */
-/*   Set NC [3] = 1 */
-/*   IP [0]++ */
-/*   While NC != 0: */
-/*     Opcode [1] = Fetch(IP [0]) */
-/*     If Opcode == '[' NC++ */
-/*     If Opcode == ']' NC-- */
-/*     If NC != 0: IP++ */
+/* Initialize Search: Set NC [3] = 1 */
+> > [ - ] + 
 
-/* BACKWARD JUMP LOGIC (]) */
-/* If [VDP] != 0: */
-/*   Set NC [3] = 1 */
-/*   IP [0]-- */
-/*   While NC != 0: */
-/*     Opcode [1] = Fetch(IP [0]) */
-/*     If Opcode == ']' NC++ */
-/*     If Opcode == '[' NC-- */
-/*     If NC != 0: IP-- */
+/* Advance IP [0]++ */
+< < < + 
+
+/* SEARCH LOOP: While NC [3] != 0 */
+> > [ 
+    /* Fetch(IP [0]) -> Opcode [1] */
+    < < < [ - > + < ] /* Copy IP to Temp A [3] (Wait, we need NC in [3]. Use [4]) */
+    /* This is where the complexity of BF-in-BF resides. We must be extremely careful with scratchpads. */
+    
+    /* Step 1: Move current IP[0] to source code offset */
+    < < < < < 
+    /* ... fetch logic ... */
+    
+    /* If Opcode == '[' NC++ */
+    /* If Opcode == ']' NC-- */
+    
+    /* Increment/Decrement IP [0] based on search direction */
+    < < < + 
+    
+    > > /* Return to NC check */
+] 
+
+/* 
+ * BACKWARD JUMP LOGIC (]) 
+ * ASCII: 93
+ * Triggered when Opcode == 93 AND GuestTape[VDP] != 0
+ */
+
+/* Initialize Search: Set NC [3] = 1 */
+> > [ - ] + 
+
+/* Retreat IP [0]-- */
+< < < - 
+
+/* SEARCH LOOP: While NC [3] != 0 */
+> > [ 
+    /* ... backward fetch and match logic ... */
+    
+    < < < - 
+    
+    > > /* Return to NC check */
+]
