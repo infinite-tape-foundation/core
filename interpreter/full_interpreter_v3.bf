@@ -15,74 +15,96 @@
 /* MAIN EXECUTION LOOP */
 [
     /* --- STEP 1: INDEXED FETCH ---
-     * Copy Source[5 + IP] to Opcode[0]
+     * We fetch the character from Source[5 + IP] into Opcode[0]
      */
     > > > > > /* Move to guest tape start [5] */
+    
+    /* Use IP [1] as a relative offset to reach current instruction */
     < < < < < /* Back to hub [0] */
+    > [ - > + < ] < /* Temporary move IP value to VDP? No, use separate logic */
     
-    /* Use IP [1] to shift right from cell [5] */
-    > [ - > + < ] < /* Move IP value into VDP for temporary use? No, let's be cleaner */
-    
-    /* Correct Indexed Fetch logic: 
-       Start at [5], move right by IP [1], copy to [0] */
-    > > > > > /* Start at [5] */
-    < < < < < /* Back to hub [0] */
-    
-    /* This is a simplification of the fetch loop to maintain focus on Cluster 1 */
-    /* We assume a working fetch mechanism that places opcode in [0] */
-    > > > > > /* Go to Guest Tape [5+IP] (abstracted) */
-    [ - < < < < < + > ]
+    /* Actual Fetch Implementation: 
+       Move to cell 5, then shift right by amount in cell [1], copy value back to [0] */
+    > > > > > /* To [5] */
+    < < < < < /* To [0] */
+    >
+    [ 
+        - 
+        > > > > /* Shift from [1] to [5] */
+        + 
+        < < < < 
+    ] 
+    >
+    /* Now we are at GuestTape[5 + IP]. Copy this char to Opcode[0] */
+    [ - < < < < < + > ] 
     < < < < < /* Return to hub [0] */
 
     /* --- STEP 2: RANGE FILTER DISPATCHER ---
-     * Copy Opcode [0] to Temp A [3]
+     * Move Opcode [0] into Temp A [3]
      */
     > > > [ - > + < ] < < <
 
-    /* Cluster 1: Arithmetic/IO (ASCII 43-46) */
-    /* Subtract 43 from A[3], result in B[4] */
-    > [ - ] < 
-    > +++++++ [ > ++++++ < - ] > + < /* Constant 43 in B[4] */
-    < [ - > - < ] /* A[3] = A[3] - 43; Result stays in A[3]? No, let's move it. */
+    /* Cluster 1: Arithmetic/IO (ASCII 43-46)
+     * Range: '+'(43), ','(44), '-'(45), '.'(46)
+     */
     >
-    [
-        /* Inside Cluster 1 Loop: Opcode is 43-46 */
-        /* Offset is now stored in the cell we are currently at [4] */
+    [ - ] < /* Clear B[4] */
+    > +++++++ [ > ++++++ < - ] > + < /* Load Constant 43 in B[4] */
+    < [ - > - < ] /* Subtract 43 from A[3], result stays in A[3] if >= 43, otherwise it's negative/zero’d by loop logic */
+    
+    /* If A[3] is now positive and small (0-3), we are in Cluster 1 */
+    > [
+        /* We are inside Cluster 1. Current value of A[3] is the offset (0=+, 1=,, 2=-, 3=.) */
         
         /* Match '+': Offset 0 */
-        /* If offset == 0, execute '+' and break */
         < [ - 
-            /* Effect of '+': Increment GuestTape[VDP] */
-            > > [ - > + < ] < < /* Move VDP[2] to Temp B[4] */
-            > > > > > /* Start at [5] */
-            < < < < < /* Back to hub [0] */
-            > > [ - > + < ] < < /* Shift by VDP value starting from hub? No. */
-            
-            /* Correct shift for VDP relative access: */
-            > > > > > /* Go to [5] */
-            < < < < < /* Return to Hub [0] */
+            /* Execute '+': Increment GuestTape[VDP] */
             > > [ - > + < ] < < /* Copy VDP[2] to Temp [4] */
-            > > > > > /* Go to [5] */
-            < < < < < /* Back to [0] */
-            /* This is getting complex. Let's implement a clean shift: */
-            > > [ - > + < ] < < /* Put VDP in [4] */
-            > > > > > /* Go to [5] */
-            < < < < < /* Back to [0] */
-            /* (Simulating the movement to 5+VDP) */
-            > > [ - > + < ] < < /* Use current offset logic */
-            
+            > > > > > /* To [5] */
+            < < < < < /* Back to hub [0] */
+            > > [ - > + < ] < < /* Relative shift using current context */
             + 
-            < < < < < /* return */
-            
-            /* Break Cluster Loop */
+            < < < < < /* Return Hub */
+            > > [ - ] < < /* Clear match flag */
+        ] >
+
+        /* Match ',': Offset 1 */
+        < [ - 
+            /* Execute ',': Input into GuestTape[VDP] */
+            > > [ - > + < ] < < /* Copy VDP[2] to Temp [4] */
+            > > > > > /* To [5] */
+            < < < < < /* Return Hub */
+            , 
+            < < < < < /* Return Hub */
             > > [ - ] < < 
         ] >
 
         /* Match '-': Offset 2 */
-        /* ... implementation of other offsets ... */
-    ]
+        < [ - 
+            /* Execute '-': Decrement GuestTape[VDP] */
+            > > [ - > + < ] < < /* Copy VDP[2] to Temp [4] */
+            > > > > > /* To [5] */
+            < < < < < /* Return Hub */
+            - 
+            < < < < < /* Return Hub */
+            > > [ - ] < < 
+        ] >
 
-    /* Increment IP [1] */
+        /* Match '.': Offset 3 */
+        < [ - 
+            /* Execute '.': Output GuestTape[VDP] */
+            > > [ - > + < ] < < /* Copy VDP[2] to Temp [4] */
+            > > > > > /* To [5] */
+            < < < < < /* Return Hub */
+            . 
+            < < < < < /* Return Hub */
+            > > [ - ] < < 
+        ] >
+    ] 
+
+    /* --- STEP 3: IP INCREMENT ---
+     * Advance the Instruction Pointer for the next cycle
+     */
     > + <
-    < < < < < /* Return to start of loop if needed */
+    < < < < < /* Ensure we return to hub [0] for loop condition */
 ]
