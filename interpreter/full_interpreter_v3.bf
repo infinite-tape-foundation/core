@@ -51,7 +51,7 @@
     > [ - < - > ] < /* A = A - 43 */
     
     /* Range Check: if 0 <= A <= 3 */
-    [
+    [ 
         /* Fine-grained matching inside Arithmetic cluster */
         /* If A == 0 -> '+' : Inc [VDP] */
         < [ - > + < ] > [ - < + > ] < 
@@ -75,6 +75,12 @@
     > [ - < - > ] <
     [
         /* Movement Dispatch Logic */
+        /* If A == 0 -> '<' : Dec VDP[2] */
+        < [ - > + < ] > [ - < + > ] < 
+        
+        /* If A == 2 -> '>' : Inc VDP[2] */
+        < [ - > + < ] > [ - < + > ] < 
+        
         < < < < <
     ]
 
@@ -84,6 +90,12 @@
     > [ - < - > ] <
     [
         /* Control Dispatch Logic */
+        /* If A == 0 -> '[' : Jump Forward if [VDP]==0 */
+        < [ - > + < ] > [ - < + > ] < 
+        
+        /* If A == 2 -> ']' : Jump Backward if [VDP]!=0 */
+        < [ - > + < ] > [ - < + > ] < 
+        
         < < < < <
     ]
 
