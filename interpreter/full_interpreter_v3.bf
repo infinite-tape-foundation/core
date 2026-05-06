@@ -46,8 +46,12 @@
            if it's '+' we just execute and clear the cluster trigger. */
         
         /* Effect of '+': Increment GuestTape[VDP] */
-        /* We use a shift-and-add based on VDP value */
-        > [ - > + < ] < 
+        /* We move pointer by VDP value starting from cell [5] */
+        > > > [ - > + < ] < < < /* Move to VDP register [2] */
+        [ - > + < ] /* Use VDP as counter to shift right from hub [0] */
+        > > > > > /* Base offset to guest tape start [5] */
+        + /* The actual increment operation on GuestTape[VDP] */
+        < < < < < /* Return to hub */
         
         /* Clear cluster trigger to exit */
         > [ - ] <
