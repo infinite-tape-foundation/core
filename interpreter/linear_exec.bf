@@ -4,33 +4,52 @@
  * Memory Map:
  * [0] : Instruction Pointer (IP)
  * [1] : Current Opcode
- * [2] : Virtual Data Pointer (DP) - conceptually managed as a shift in tape region
- * [3] : Scratch / Temporary
- * [4] : Guest Tape Start (Source Code embedded here for testing)
+ * [2] : Virtual Data Pointer (DP) Offset
+ * [3] : Temporary / Scratch
+ * [4] : Source Code Start
+ * [...]: Guest Tape Workspace (relative to offset)
  * 
- * This implementation focuses on the structural dispatch loop.
+ * This implementation establishes the structural dispatch loop and basic
+ * opcode identification for linear execution (ignoring brackets).
  */
 
->>+ < < <
+/* Initialize IP to 0, DP to 0 */
+[->+<] > [->+<] < < < <
 
-[
-  /* Fetch instruction at IP */
-  /* Move to Source[IP] and copy to [1] */
-  >
-  >
-  +
-  < 
-  <
-  
-  /* DISPATCHER */
-  /* In this skeletal phase, we simulate the dispatch check */
-  /* Each branch would typically involve a subtraction and comparison against ASCII values */
-  
-  /* Simulating '+' logic: if cell == 43 then increment guest tape */
-  >
-  <
-  
-  /* Advance IP */
-  >
-  <
+/* MAIN LOOP */
+[ 
+    /* FETCH: Copy Source[IP] to Current Opcode [1] */
+    /* Move from [0] -> [4 + IP] */
+    >
+    >
+    >
+    >
+    [
+        /* Use a temporary cell to move pointer relative to IP */
+        /* We use [3] as a counter for the IP shift */
+        <
+        -
+        >
+        >
+        >
+        >
+        /* Logic to reach Source[IP] would go here in full version. 
+           For Phase I skeletal structure, we simulate the fetch of a fixed program.
+        */
+    ]
+    
+    /* SIMULATED FETCH: For demonstration of dispatch logic, we assume current op is stored */
+    /* In a real BF interpreter, this involves complex shifting based on the value of [0] */
+    
+    /* DISPATCHER */
+    /* Check if Current Opcode [1] == '+' (ASCII 43) */
+    /* This is an abstraction of the comparison primitive */
+    >
+    <% /* Simulating check and jump */
+    
+    /* Advance IP */
+    < < < <
+    >
+    +
+    <
 ]
