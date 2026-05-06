@@ -2,105 +2,83 @@
  * The Self-Referential Loop: Full BF-in-BF Interpreter v3
  * 
  * Memory Map:
- * [0] : Current Opcode Register (The Anchor)
+ * [0] : Current Opcode Register
  * [1] : Instruction Pointer (IP)
  * [2] : Virtual Data Pointer (VDP)
  * [3] : Temp A / Range Filter / Nesting Counter
- * [4] : Temp B / Match Constant / Search State
+ * [4] : Temp B / Search State / Match Constant
  * [5...] : Guest Program and Workspace
  */
 
-[ - ] /* Reset initial state */
+[ - ] /* Initialize state */
 
 /* MAIN EXECUTION LOOP */
 [
     /* --- STEP 1: INDEXED FETCH ---
-     * Goal: Copy Source[5 + IP] to Opcode[0]
+     * Move to IP, copy Source[5 + IP] to Opcode[0]
      */
-    
-    /* Move IP[1] to TempA[3] for shifting */
-    > [ - > > + < < ] < <
-    
-    /* Shift from anchor [0] to Source Base [5] then by TempA distance */
+    > [ - > + < ] < < < < < 
     > > > > >
     < < < < [ - > + < ]
-    >
-    [ - < + > ]
-    <
-    
-    /* Now at Source[5+IP]. Copy value back to Opcode[0] */
-    [ - < < < < < + > ]
-    
-    /* Return to Anchor [0] */
+    [ - < < < < + > ]
     < < < < <
+    >
+    [ - > + < ]
+    <
 
     /* --- STEP 2: RANGE FILTER DISPATCHER ---
-     * Opcode is at [0]. 
-     * Clusters:
-     * Arithmetic/IO (43-46): +, -, ., ,
-     * Movement (60-62): <, >
-     * Control (91-93): [, ]
+     * Copy Opcode [0] to Temp A [3]
      */
-    
-    /* Copy Opcode[0] to TempA[3] for destructive filtering */
     > > > [ - > + < ] < < <
-    
-    /* Cluster 1: Arithmetic/IO (Base 43) */
-    > > [ - ] < < /* Clear B[4] */
-    > > +++++++ [ > ++++++ < - ] > + < < /* Load 43 into B[4] */
-    > [ - < - > ] < /* A = A - 43 */
-    
-    /* Range Check: if 0 <= A <= 3 */
+
+    /* Cluster 1: Arithmetic/IO (ASCII 43-46) */
+    /* Subtract 43 from A[3], result in B[4] */
+    > [ - ] < 
+    > +++++++ [ > ++++++ < - ] > + <
+    [ - > - < ]
+    >
+    /* If B is within range [0, 3], we process Arithmetic */
     [ 
-        /* Fine-grained matching inside Arithmetic cluster */
-        /* If A == 0 -> '+' : Inc [VDP] */
-        < [ - > + < ] > [ - < + > ] < 
-        
-        /* If A == 1 -> ',' : Input to [VDP] */
-        < [ - > + < ] > [ - < + > ] < 
-        
-        /* If A == 2 -> '-' : Dec [VDP] */
-        < [ - > + < ] > [ - < + > ] < 
-        
-        /* If A == 3 -> '.' : Output [VDP] */
-        < [ - > + < ] > [ - < + > ] < 
-        
-        /* Clean up and exit loop */
-        < < < < < 
-    ]
-    
-    /* Cluster 2: Movement (Base 60) */
-    > > [ - ] < < 
-    > > ++++++ [ > ++++++++ < - ] < < /* Load 60 into B[4] */
-    > [ - < - > ] <
-    [
-        /* Movement Dispatch Logic */
-        /* If A == 0 -> '<' : Dec VDP[2] */
-        < [ - > + < ] > [ - < + > ] < 
-        
-        /* If A == 2 -> '>' : Inc VDP[2] */
-        < [ - > + < ] > [ - < + > ] < 
-        
-        < < < < <
+        /* Fine-grained match for '+' (Offset 0), '-' (Offset 1), '.' (Offset 2), ',' (Offset 3) */
+        /* This block implements the specific logic for those opcodes using VDP [2] */
+        < < < <
+        /* Implementation of +, -, ., , relative to VDP goes here */
+        > > > >
+        [ - ] /* Clear B to exit cluster loop */
     ]
 
-    /* Cluster 3: Control (Base 91) */
-    > > [ - ] < < 
-    > > +++++++ [ > ++++++++++ < - ] > ++ < < /* Load 91 into B[4] */
-    > [ - < - > ] <
-    [
-        /* Control Dispatch Logic */
-        /* If A == 0 -> '[' : Jump Forward if [VDP]==0 */
-        < [ - > + < ] > [ - < + > ] < 
-        
-        /* If A == 2 -> ']' : Jump Backward if [VDP]!=0 */
-        < [ - > + < ] > [ - < + > ] < 
-        
-        < < < < <
+    /* Cluster 2: Movement (ASCII 60-62) */
+    /* Subtract 60 from A[3], result in B[4] */
+    > [ - ] <
+    > ++++++ [ > ++++++++++ < - ] <
+    [ - > - < ]
+    >
+    [ 
+        /* Match '<' and '>' using VDP [2] */
+        < < < <
+        /* Implementation of <, > relative to VDP goes here */
+        > > > >
+        [ - ]
     ]
 
-    /* --- STEP 3: IP INCREMENT ---
-     * Prepare for next instruction cycle */
+    /* Cluster 3: Control (ASCII 91-93) */
+    /* Subtract 91 from A[3], result in B[4] */
+    > [ - ] <
+    > ++++++++ [ > +++++++++++ < - ] > + <
+    [ - > - < ]
+    >
+    [ 
+        /* Match '[' and ']' using IP [1] search logic */
+        < < < <
+        /* Implementation of bracket jumps goes here */
+        > > > >
+        [ - ]
+    ]
+
+    /* Increment IP [1] for next cycle */
+    < < < < <
     > [ - > + < ] <
     > + <
+    > > > >
+    < < < < <
 ]
