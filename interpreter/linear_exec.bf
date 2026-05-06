@@ -4,43 +4,45 @@
  * Memory Map:
  * [0] : Instruction Pointer (IP)
  * [1] : Current Opcode
- * [2] : Virtual Data Pointer (VDP) - Offset from Tape Start
- * [3] : Temporary / Logic Workspace
- * [4] : Guest Tape Start / Source Code Base
- * [...]: Source Code and Guest Workspace
+ * [2] : Virtual Data Pointer (VDP) - Absolute address on Guest Tape
+ * [3] : Temp / Comparison Cell
+ * [4] : Source Base Offset
+ * [5+] : Source Code and Guest Workspace
  */
 
-/* Initialize IP=0, VDP=0 */
+/* Initialize IP=0, VDP=5 (Guest Tape Start), SourceBase=5 */
++++++ > +++++ <
 
 /* MAIN LOOP */
-[
-    /* 1. FETCH: Calculate address (SourceBase + IP) and copy to Cell[1] */
-    /* This requires a temporary move based on IP value */
-    < < < < /* Return to IP [0] */
-    [ 
+[ 
+    /* 1. FETCH: Copy cell at (SourceBase + IP) to Opcode [1] */
+    /* Move from [0] to [SourceBase + IP] */
+    > > > > > 
+    /* We are now at [5]. Use IP [0] to offset */
+    < < < < <
+    [
         - 
-        > > > > /* Move to Source region */
-        /* We need to shift further by the remaining IP value... */
-        /* For this phase, we implement a simplified fetch for demo purposes */
-        < < < < 
+        > > > > > 
+        /* This is a simplification; actual indexed fetch in BF requires a shift loop */
+        < < < < <
     ]
     
-    /* Placeholder Fetch: Assume source is adjacent for now */
-    > > > > 
-    [ - < < < < > ] 
-    < < < < 
-
-    /* 2. DISPATCHER: Compare Opcode [1] against BF commands */
-    > /* Current Opcode [1] */
+    /* Placeholder Fetch for structural validation: Assume we read current cell */
+    > > > > >
     
-    /* Example: Handle '>' (62) -> Increment VDP [2] */
-    /* Logic: if (Opcode == 62) { VDP++ } */
-    /* Use a subtraction-based comparison primitive */
+    /* 2. DISPATCHER */
+    /* Current Opcode is now in the active cell */
     
-    /* Simplified logic flow for Linear Execution */
+    /* Logic: If Opcode == '>' (62) then VDP++ */
+    /* This would typically use a comparison primitive */
+    
+    /* For this phase, we refine the memory layout and ensure movement works */
     
     /* Advance IP [0] */
-    < 
+    < < < < <
     + 
-    >
+    > > > > >
+    
+    /* Loop termination condition: Stop when opcode is 0 or EOF marker */
+    [ - ]
 ]
