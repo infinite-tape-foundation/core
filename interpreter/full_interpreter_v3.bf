@@ -39,7 +39,6 @@
     > 
     [
         /* Fine-grained match for '+', '-', '.', ',' relative to VDP [2] */
-        /* This block implements the actual operations based on the offset in B[4] */
         < < < <
         
         /* Match '+': Offset 0. Since we are in the loop, it's non-zero unless we handle carefully. */
