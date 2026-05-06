@@ -17,4 +17,4 @@
 `full_interpreter.bf` against new map.
 - [x] Rewrite fetch cycle for new indices.
 - [x] Update dispatcher comparison anchors.
-- [ ] Verify functionality.
+- [x] Verify functionality.
