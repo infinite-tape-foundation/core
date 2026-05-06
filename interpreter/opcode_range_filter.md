@@ -1,30 +1,33 @@
-# Opcode Range Filtering Logic (v3)
+# Opcode Range Filtering Logic
 
-To avoid linear subtraction checks for every possible Brainfuck opcode, we group them into clusters based on their ASCII values.
+To avoid O(N) linear scanning of all possible Brainfuck opcodes, we implement a Cluster-Based Dispatcher. This reduces the number of comparisons and pointer shifts by grouping characters based on their ASCII proximity.
 
 ## 1. The Clusters
 
-| Cluster | ASCII Range | Tokens |
-| :--- | :--- | :--- |
-| **Arithmetic/IO** | 43 - 46 | `+` (43), `,` (44), `-` (45), `.` (46) |
-| **Movement** | 60 - 62 | `<` (60), `>` (62) |
-| **Control** | 91 - 93 | `[` (91), `]` (93) |
+| Cluster | Tokens | ASCII Range | Base Offset |
+| :--- | :--- | :--- | :--- |
+| **Arithmetic/IO** | `+`, `-`, `.`, `,` | 43 - 46 | 43 |
+| **Movement** | `<`, `>` | 60 - 62 | 60 |
+| **Control** | `[`, `]` | 91 - 93 | 91 |
 
 ## 2. The Filter Algorithm
 
-1. **Load Opcode**: Copy the current instruction to a temporary cell (`TempA`).
-2. **Coarse Pruning**:
-    - Subtract 43 from `TempA`. 
-    - If the result is $0 \le x \le 3$, dispatch to **Arithmetic/IO** logic.
-    - Otherwise, restore/re-copy and subtract 60.
-    - If the result is $0 \le x \le 2$, dispatch to **Movement** logic.
-    - Otherwise, subtract 91.
-    - If the result is $0 \le x \le 2$, dispatch to **Control** logic.
-3. **Fine-Grained Dispatch**:
-    - Within each cluster, use simple subtraction or comparison against small constants (0, 1, 2, 3) to determine the exact token.
+For each cluster:
+1. Copy the current opcode to a temporary cell $T_A$.
+2. Load the cluster base offset into $T_B$.
+3. Compute $Diff = T_A - T_B$.
+4. If $Diff \ge 0$ and $Diff < 4$, execute fine-grained matching within that cluster.
+5. Otherwise, proceed to the next cluster.
 
-## 3. Implementation Detail: Safe Subtraction
+## 3. Fine-Grained Match (Example: Arithmetic)
 
-Since Brainfuck cells wrap, we must be careful with negative results. We use a helper cell to ensure that if we subtract a value larger than the opcode, the resulting large wrapped value doesn't accidentally trigger a range match.
+Once inside the Arithmetic cluster ($Diff \in [0, 3]$):
+- If $Diff == 0$: Token is `+` $\rightarrow$ Increment Guest Tape at VDP.
+- If $Diff == 1$: Token is `,` $\rightarrow$ Input char to Guest Tape at VDP.
+- If $Diff == 2$: Token is `-` $\rightarrow$ Decrement Guest Tape at VDP.
+- If $Diff == 3$: Token is `.` $\rightarrow$ Output Guest Tape at VDP.
 
-*Tactic*: Check for "underflow" by verifying the sign of the operation before proceeding to the next cluster.
+## 4. Complexity Analysis
+
+- **Linear Scan**: Up to 8 comparisons per instruction.
+- **Range Filter**: Maximum 3 cluster checks + small constant for internal match. This significantly reduces pointer movement in the dispatch loop.
