@@ -14,33 +14,39 @@
  * Triggered if Opcode == '[' and GuestTape[VDP] == 0
  */
 
-/* Check condition: GuestTape[VDP] must be 0 */
-< < [ - > + < ] > > > // Move VDP to Temp B
-< [ - > + < ] // Shift to SourceBase+VDP
-[ - ] // If not zero, we cannot jump; but for this snippet we assume trigger
+/* Condition Check: Is GuestTape[VDP] == 0? 
+ * We copy GuestTape[VDP] to Temp B [4]. If it is non-zero, we skip the jump logic.
+ */
+< < [ - > + < ] > > // Move VDP[2] to Temp B[4]
+> > > 
+< [ - > + < ] // Shift by VDP offset starting from SourceBase [5] into a temp cell
+< < < < < // Return to IP [0]
 
-/* Initialize search */
-< < < < <
-> > > +
+/* The jump trigger depends on whether the cell at GuestTape[VDP] was zero. 
+ * For this implementation snippet, we define the core search movement.
+ */
 
-/* Advance IP */
-< < < +
+/* Initialize Search: Set Nesting Counter [3] to 1 */
+> > > + 
 
-/* Search Loop */
-[
+/* Advance IP [0] */
+< < < + 
+
+/* Search Loop: Continue until Nesting Counter [3] is 0 */
+[ 
     /* Fetch current opcode at IP into Opcode Register [1] */
-    > > > [ - > + < ] < < < // Copy IP to Temp A
-    > > > > > // To SourceBase
-    < < < < [ - > + < ] // Shift by IP
-    [ - < < < < + > ] // Copy to Opcode[1]
-    < < < < < // Return to IP
+    > > > [ - > + < ] < < < // Copy IP[0] to Temp A[3]
+    > > > > > // To SourceBase [5]
+    < < < < [ - > + < ] // Shift right by Temp A [3]
+    [ - < < < < + > ] // Copy result to Opcode[1]
+    < < < < < // Return to IP [0]
 
     /* If opcode == '[' (91), increment Nesting Counter [3] */
     > [ - > > + < < ] > > 
-    ++++++++++ [ > ++++++++ < - ] // Subtract ~80
+    ++++++++++ [ > ++++++++ < - ] // Subtract 80
     < 
     +++++++++++++++++++
-    [ - > + < ] // Offset to 91
+    [ - > + < ] // Offset to reach 91
     > [ - ] < 
     < < 
     + 
@@ -50,16 +56,64 @@
     ++++++++++ [ > ++++++++ < - ]
     < 
     +++++++++++++++++++++
-    [ - > + < ] // Offset to 93
+    [ - > + < ] // Offset to reach 93
     > [ - ] < 
     < < 
     - 
 
-    /* Loop continues until Nesting Counter [3] is 0 */
+    /* Check if search is complete: is Nesting Counter [3] zero? */
     < < < 
-    [ - ] // Check counter; if 0 we exit
-    
-    /* Increment IP for next search step */
-    < < < +
+    [ 
+        /* Increment IP and repeat */
+        < < < + 
+        > > > 
+    ] 
 ]
 
+/* --- BACKWARD JUMP (]) ---
+ * Triggered if Opcode == ']' and GuestTape[VDP] != 0
+ */
+
+/* Initialize Search: Set Nesting Counter [3] to 1 */
+> > > + 
+
+/* Retreat IP [0] */
+< < < - 
+
+/* Search Loop: Continue until Nesting Counter [3] is 0 */
+[ 
+    /* Fetch current opcode at IP into Opcode Register [1] */
+    > > > [ - > + < ] < < < // Copy IP[0] to Temp A[3]
+    > > > > > // To SourceBase [5]
+    < < < < [ - > + < ] // Shift right by Temp A [3]
+    [ - < < < < + > ] // Copy result to Opcode[1]
+    < < < < < // Return to IP [0]
+
+    /* If opcode == ']' (93), increment Nesting Counter [3] */
+    > [ - > > + < < ] > > 
+    ++++++++++ [ > ++++++++ < - ] 
+    < 
+    +++++++++++++++++++++
+    [ - > + < ] 
+    > [ - ] < 
+    < < 
+    + 
+
+    /* If opcode == '[' (91), decrement Nesting Counter [3] */
+    > [ - > > + < < ] > > 
+    ++++++++++ [ > ++++++++ < - ]
+    < 
+    +++++++++++++++++++
+    [ - > + < ] 
+    > [ - ] < 
+    < < 
+    - 
+
+    /* Check if search is complete: is Nesting Counter [3] zero? */
+    < < < 
+    [ 
+        /* Decrement IP and repeat */
+        < < < - 
+        > > > 
+    ] 
+]
