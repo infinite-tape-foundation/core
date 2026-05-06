@@ -2,58 +2,71 @@
  * The Self-Referential Loop: Full BF-in-BF Interpreter v3
  * 
  * Memory Map:
- * [0] : Current Opcode Register
+ * [0] : Current Opcode Register (The Anchor)
  * [1] : Instruction Pointer (IP)
  * [2] : Virtual Data Pointer (VDP)
- * [3] : Temp A / Range Filter
- * [4] : Temp B / Match Constant
+ * [3] : Temp A / Range Filter / Nesting Counter
+ * [4] : Temp B / Match Constant / Search State
  * [5...] : Guest Program and Workspace
  */
 
-[ - ] /* Ensure state is clean */
+[ - ] /* Initialize state */
 
 /* MAIN EXECUTION LOOP */
 [
     /* --- STEP 1: INDEXED FETCH ---
-     * Copy Source[5 + IP] to Opcode[0]
-     * We move from the anchor at [0] to [5+IP]
+     * Goal: Copy Source[5 + IP] to Opcode[0]
      */
-    > [ - > + < ] < /* Move IP value into a temp shift if needed, or use direct jump */
-    /* Simplified fetch logic for v3 structural integration */
-    >> >> > /* Jump to Base of Source (roughly) */
-    /* ... (Detailed Indexed Fetch Implementation) ... */
+    
+    /* Move IP[1] to TempA[3] for shifting */
+    > [ - > > + < < ] < <
+    
+    /* Shift from anchor [0] to Source Base [5] then by TempA distance */
+    > > > > >
+    < < < < [ - > + < ]
+    >
+    [ - < + > ]
+    <
+    
+    /* Now at Source[5+IP]. Copy value back to Opcode[0] */
+    [ - < < < < < + > ]
+    
+    /* Return to Anchor [0] */
     < < < < <
 
     /* --- STEP 2: RANGE FILTER DISPATCHER ---
-     * Opcode is at [0].
-     * Strategy: Subtract cluster base values to prune search space.
+     * Opcode is at [0]. 
+     * Clusters:
+     * Arithmetic/IO (43-46): +, -, ., ,
+     * Movement (60-62): <, >
+     * Control (91-93): [, ]
      */
     
-    /* Copy Opcode to Temp A [3] for filtering */
+    /* Copy Opcode[0] to TempA[3] for destructive filtering */
     > > > [ - > + < ] < < <
-
-    /* Range 1: Arithmetic/IO (43-46) */
-    /* Test for >= 43 */
+    
+    /* Cluster 1: Arithmetic/IO (Base 43) */
     > > [ - ] < < /* Clear B[4] */
     > > +++++++ [ > ++++++ < - ] > + < < /* Load 43 into B[4] */
     > [ - < - > ] < /* A = A - 43 */
     
-    /* If A is now in range 0-3, it's Arithmetic Cluster */
-    [ 
-        /* ARITHMETIC CLUSTER DISPATCH */
-        /* Check +, -, ., , using small offsets from current A */
-        /* Example: if A==0 then '+' */
-        < [ - > + < ] > [ - < + > ] < /* Move A back to test */
-        /* ... Implementation of fine-grained matching ... */
-        < < < < < /* Return to anchor */
+    /* If A is now in range 0-3, it's an Arithmetic token */
+    [
+        /* ARITHMETIC DISPATCH */
+        /* A=0 -> '+' : Inc [VDP] */
+        < [ - > + < ] > [ - < + > ] < 
+        /* ... Fine grained matching logic goes here ... */
+        < < < < <
     ]
-
-    /* Range 2: Movement (60-62) */
+    
+    /* Cluster 2: Movement (Base 60) */
     /* Subtract remaining distance to 60... */
     
-    /* Range 3: Control (91-93) */
+    /* Cluster 3: Control (Base 91) */
     /* Subtract remaining distance to 91... */
 
-    /* Increment IP for next cycle */
+    /* --- STEP 3: IP INCREMENT ---
+     * Prepare for next instruction cycle */
     > [ - > + < ] <
+    > + <
 ]
