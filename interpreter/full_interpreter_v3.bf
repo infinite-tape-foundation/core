@@ -5,8 +5,8 @@
  * [0] : Current Opcode Register
  * [1] : Instruction Pointer (IP)
  * [2] : Virtual Data Pointer (VDP)
- * [3] : Temp A / Range Filter / Nesting Counter
- * [4] : Temp B / Match Constant / Search State
+ * [3] : Temp A / Range Filter Offset
+ * [4] : Temp B / Match Flag
  * [5...] : Guest Program and Workspace
  */
 
@@ -19,18 +19,18 @@
      */
     > > > > > /* Move to guest tape start [5] */
     
-    /* Use IP [1] as a relative offset to reach current instruction */
+    /* Shift pointer by IP[1] value */
     < < < < < /* Back to hub [0] */
-    > [ - > + < ] < /* Temporary move IP value to VDP? No, use separate logic */
+    > [ - > + < ] < /* Copy IP [1] to VDP[2] temporarily? No, let's be careful. */
     
-    /* Actual Fetch Implementation: 
-       Move to cell 5, then shift right by amount in cell [1], copy value back to [0] */
+    /* Proper Indexed Fetch: 
+       Move to cell 5, shift right by amount in cell [1], copy value back to [0] */
     > > > > > /* To [5] */
     < < < < < /* To [0] */
     >
     [ 
         - 
-        > > > > /* Shift from [1] to [5] */
+        > > > > /* Shift towards guest tape */
         + 
         < < < < 
     ] 
@@ -47,64 +47,49 @@
     /* Cluster 1: Arithmetic/IO (ASCII 43-46)
      * Range: '+'(43), ','(44), '-'(45), '.'(46)
      */
-    >
+    > 
     [ - ] < /* Clear B[4] */
     > +++++++ [ > ++++++ < - ] > + < /* Load Constant 43 in B[4] */
-    < [ - > - < ] /* Subtract 43 from A[3], result stays in A[3] if >= 43, otherwise it's negative/zero’d by loop logic */
     
-    /* If A[3] is now positive and small (0-3), we are in Cluster 1 */
-    > [
+    /* Subtract 43 from A[3] and set Match Flag in B[4] if positive */
+    < [ - > - < ] 
+    
+    /* If A[3] is now the offset (0-3), we proceed. 
+       To check for Offset 0 (+), we need a separate flag because [ - ] skips 0. */
+    >
+    [
         /* We are inside Cluster 1. Current value of A[3] is the offset (0=+, 1=,, 2=-, 3=.) */
         
-        /* Match '+': Offset 0 */
+        /* The match logic here must be non-destructive to allow multiple checks */
+        /* For v3 refinement, we implement basic dispatch based on offset */
+        
+        /* Match '+': Offset 0 
+           If A[3] is 0, then '+' should execute. 
+           Since [ - ] doesn't enter on 0, we use a complementary loop or temporary copy. */
+        
+        /* Copy Offset A[3] to Temp B[4] for testing */
+        < [ - > + < ] >
+        
+        /* Execute '+': Target GuestTape[5 + VDP], increment */
         < [ - 
-            /* Execute '+': Increment GuestTape[VDP] */
-            > > [ - > + < ] < < /* Copy VDP[2] to Temp [4] */
-            > > > > > /* To [5] */
-            < < < < < /* Back to hub [0] */
-            > > [ - > + < ] < < /* Relative shift using current context */
-            + 
-            < < < < < /* Return Hub */
-            > > [ - ] < < /* Clear match flag */
+            /* This block executes if Offset != 0. 
+               We only want this to skip if it IS 0. 
+               Wait, Brainfuck logic: if cell is 0, loop is skipped. */
         ] >
 
-        /* Match ',': Offset 1 */
-        < [ - 
-            /* Execute ',': Input into GuestTape[VDP] */
-            > > [ - > + < ] < < /* Copy VDP[2] to Temp [4] */
-            > > > > > /* To [5] */
-            < < < < < /* Return Hub */
-            , 
-            < < < < < /* Return Hub */
-            > > [ - ] < < 
-        ] >
-
-        /* Match '-': Offset 2 */
-        < [ - 
-            /* Execute '-': Decrement GuestTape[VDP] */
-            > > [ - > + < ] < < /* Copy VDP[2] to Temp [4] */
-            > > > > > /* To [5] */
-            < < < < < /* Return Hub */
-            - 
-            < < < < < /* Return Hub */
-            > > [ - ] < < 
-        ] >
-
-        /* Match '.': Offset 3 */
-        < [ - 
-            /* Execute '.': Output GuestTape[VDP] */
-            > > [ - > + < ] < < /* Copy VDP[2] to Temp [4] */
-            > > > > > /* To [5] */
-            < < < < < /* Return Hub */
-            . 
-            < < < < < /* Return Hub */
-            > > [ - ] < < 
-        ] >
-    ] 
+        /* CORRECTED MATCH LOGIC FOR CLUSTER 1: */
+        
+        /* If Offset == 0 (+) */
+        < [ - > + < ] > /* Copy A[3] to B[4] */
+        < [ - ] > /* Clear A[3]? No. */
+        
+        /* We will use the property that if Offset was 0, the first loop is skipped. */
+        /* Refined implementation of Cluster 1 follows in next iteration of v3_refinement. */
+    ]
 
     /* --- STEP 3: IP INCREMENT ---
      * Advance the Instruction Pointer for the next cycle
      */
     > + <
-    < < < < < /* Ensure we return to hub [0] for loop condition */
+    < < < < < /* Return to hub [0] for loop condition */
 ]
