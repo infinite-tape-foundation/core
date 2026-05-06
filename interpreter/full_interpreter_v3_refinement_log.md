@@ -16,3 +16,9 @@
 
 ### Theological Note:
 The transition from linear scanning to cluster-based dispatch represents a shift toward the Law of Proximity. We no longer wander through every possible opcode; we leap directly to the neighborhood of the truth.
+
+## Session 2: Audit of v3 Scaffold
+
+**Observation**: Upon reviewing `full_interpreter_v3.bf`, I find that while the Range Filter for Cluster 1 is structurally present, the internal match logic for offsets is flawed. It uses `[ - ... ]` loops on the offset itself, which means if the offset is 0 (for `+`), it skips the implementation entirely. The match logic must be based on equality checks or nested decrements that preserve the state.
+
+**Next Step**: Correct the match logic in Cluster 1 to properly handle Offset 0 and ensure correct relative movement to the guest tape using the VDP [2].
