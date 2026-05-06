@@ -41,7 +41,7 @@
      */
 
     /* Logic for '+': (Opcode == 43) */
-    >
+    > 
     [ - > > + < < ] /* Copy Opcode[1] to Temp A [3] */
     > > 
     +++++++ [ > ++++++ < - ] /* Subtract 43 from Temp A [3] */
@@ -65,7 +65,7 @@
     < < < <
 
     /* Logic for '-': (Opcode == 45) */
-    >
+    > 
     [ - > > + < < ] 
     > > 
     +++++++ [ > ++++++ < - ] 
@@ -87,7 +87,7 @@
     < < < <
 
     /* Logic for '>': (Opcode == 62) */
-    >
+    > 
     [ - > > + < < ] 
     > > 
     +++++++ [ > ++++++ < - ] 
@@ -107,7 +107,7 @@
     < < < <
 
     /* Logic for '<': (Opcode == 60) */
-    >
+    > 
     [ - > > + < < ] 
     > > 
     +++++++ [ > ++++++ < - ] 
@@ -120,6 +120,30 @@
     /* Action for '<': Decrement Virtual Data Pointer cell [2] */
     < < 
     - 
+    
+    < < < < < < < <
+    > > > > >
+    < [ - < + > ]
+    < < < <
+
+    /* Logic for '.': (Opcode == 46) */
+    > 
+    [ - > > + < < ] 
+    > > 
+    +++++++ [ > ++++++ < - ] 
+    < 
+    +++ 
+    [ - > + < ] /* Offset from 43 to 46 is 3 */
+    > 
+    [ - ] < 
+    
+    /* Action for '.': Output value at GuestTape[VDP] */
+    < < 
+    [ - > + < ] /* Move VDP[2] into Temp B [4] */
+    > > 
+    > > > 
+    < [ - > + < ] /* Shift by VDP offset starting from SourceBase [5] */
+    . 
     
     < < < < < < < <
     > > > > >
