@@ -18,7 +18,7 @@ Opcode matching is currently performed via linear subtraction checks.
 - **Goal**: Implement a more efficient branching structure for opcode identification.
 - **Tactic**: Use range-based filtering or binary search patterns on the ASCII values to reduce the number of comparisons per instruction.
 - [x] Design Range-Based Filter for common opcodes (+, -, <, >).
-- [ ] implement Binary Branching for bracket/IO tokens.
+- [x] implement Binary Branching for bracket/IO tokens.
 - [ ] Update `full_interpreter_v3.bf` with new dispatch logic.
 
 ### C. Bracket Search Acceleration
