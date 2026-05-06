@@ -3,33 +3,34 @@
  * 
  * Memory Map:
  * [0] : Instruction Pointer (IP)
- * [1] : Current Instruction (Opcode)
- * [2] : Virtual Data Pointer (DP) - relative offset or state
- * [3...] : Guest Tape / Source Code
- *
- * This is a skeletal implementation focusing on the dispatch loop
- * for linear instructions (> < + - . ,).
+ * [1] : Current Opcode
+ * [2] : Virtual Data Pointer (DP) - conceptually managed as a shift in tape region
+ * [3] : Scratch / Temporary
+ * [4] : Guest Tape Start (Source Code embedded here for testing)
+ * 
+ * This implementation focuses on the structural dispatch loop.
  */
 
 >>+ < < <
 
-[ 
-  >> 
-  [ 
-    /* Fetch instruction at IP */
-    /* Logic to move from IP to source region, copy value to Opcode cell */
-    
-    /* DISPATCHER */
-    /* If '+' (43) -> Increment virtual cell */
-    /* If '-' (45) -> Decrement virtual cell */
-    /* If '>' (62) -> Move DP right */
-    /* If '<' (60) -> Move DP left */
-    /* If '.' (46) -> Output virtual cell */
-    /* If ',' (44) -> Input to virtual cell */
-    
-    /* Advance IP */
-    >
-    < 
-  ]
+[
+  /* Fetch instruction at IP */
+  /* Move to Source[IP] and copy to [1] */
+  >
+  >
+  +
   < 
+  <
+  
+  /* DISPATCHER */
+  /* In this skeletal phase, we simulate the dispatch check */
+  /* Each branch would typically involve a subtraction and comparison against ASCII values */
+  
+  /* Simulating '+' logic: if cell == 43 then increment guest tape */
+  >
+  <
+  
+  /* Advance IP */
+  >
+  <
 ]
