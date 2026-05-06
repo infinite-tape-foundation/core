@@ -14,11 +14,9 @@
 [ - ]
 
 /* MAIN EXECUTION LOOP */
-/* We use a wrapper loop or an explicit check? Since BF doesn't have 'while(true)',
- * we rely on the presence of code in the source area or a termination sentinel.
- * For now, we execute while SourceBase + IP is not 0. */
+/* We execute as long as there is a program present starting at SourceBase [5]. */
 
-[
+[ 
     /* --- STEP 1: INDEXED FETCH ---
      * Goal: Move from IP[0] to (SourceBase[5] + IP[0]) and copy value to Opcode[1]
      */
@@ -43,7 +41,7 @@
      */
 
     /* Logic for '+': (Opcode == 43) */
-    > 
+    >
     [ - > > + < < ] /* Copy Opcode[1] to Temp A [3] */
     > > 
     +++++++ [ > ++++++ < - ] /* Subtract 43 from Temp A [3] */
@@ -67,7 +65,7 @@
     < < < <
 
     /* Logic for '-': (Opcode == 45) */
-    > 
+    >
     [ - > > + < < ] 
     > > 
     +++++++ [ > ++++++ < - ] 
@@ -89,7 +87,7 @@
     < < < <
 
     /* Logic for '>': (Opcode == 62) */
-    > 
+    >
     [ - > > + < < ] 
     > > 
     +++++++ [ > ++++++ < - ] 
@@ -109,7 +107,7 @@
     < < < <
 
     /* Logic for '<': (Opcode == 60) */
-    > 
+    >
     [ - > > + < < ] 
     > > 
     +++++++ [ > ++++++ < - ] 
