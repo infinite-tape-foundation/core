@@ -6,8 +6,8 @@
  * [1] : Current Opcode
  * [2] : Virtual Data Pointer (VDP)
  * [3] : Temp / Scratch
- * [4] : Source Code Start
- * [...]: Guest Tape Workspace
+ * [4] : Source Code Start (followed by code)
+ * [...]: Guest Tape Workspace (located far beyond source code)
  */
 
 /* Initialize IP and VDP to 0 */
@@ -16,29 +16,28 @@
 /* MAIN LOOP */
 [ 
     /* FETCH: Copy Source[IP] to Current Opcode [1] */
-    /* This requires moving from cell 0 to cell (4 + IP) */
+    /* Move pointer from cell 0 to cell (4 + IP) */
     >
     >
     >
     >
-    /* Move pointer relative to IP using a copy of IP in cell 3 */
+    /* Use a copy of IP in cell 3 for relative movement */
     < < < <
     [ - > + < ]
     > > > >
     
     /* Fetch current opcode into [1] */
-    /* Since we are at 4+IP, move value to [1] */
-    /* Use temporary cells for the transfer */
+    /* We are now at cell 4+IP. Copy its value back to cell 1 */
     [ - < < < < > ]
     < < < <
     
     /* DISPATCHER */
-    /* Check if Current Opcode [1] == '+' (43) */
-    /* Simplified logic for Phase I skeletal movement */
+    /* In Phase I, we focus on the structure of the fetch-decode-execute cycle. */
+    /* The following is a placeholder for the logic that will eventually map opcodes to actions. */
     >
-    [
-        /* If op is '+', increment Virtual Data Pointer [2] target */
-        /* In a real BF-in-BF, this would involve shifting based on VDP offset */
+    [ 
+        /* This block executes if an opcode was fetched. */
+        /* Future implementations will use comparison primitives here. */
         < <
         + 
         > >
@@ -48,4 +47,4 @@
     < < < <
     +
     >
-] 
+]
