@@ -6,46 +6,88 @@
  * [1] : Instruction Pointer (IP)
  * [2] : Virtual Data Pointer (VDP)
  * [3] : Temp A / Range Filter / Nesting Counter
- * [4] : Temp B / Search State / Match Constant
+ * [4] : Temp B / Match Constant / Search State
  * [5...] : Guest Program and Workspace
  */
 
-[ - ] /* Init VDP=0, IP=0 */
+[ - ] /* Initialize state */
 
+/* MAIN EXECUTION LOOP */
 [
     /* --- STEP 1: INDEXED FETCH ---
      * Copy Source[5 + IP] to Opcode[0]
      */
-    > [ - > + < ] < < < < <
-    > > > > >
-    < < < < [ - > + < ]
-    [ - < < < < + > ]
+    > > > > > 
     < < < < <
+    [ - > + < ]
     >
     [ - > + < ]
     <
+    >
+    [ - > + < ]
+    <
+    >
+    [ - > + < ]
+    <
+    >
+    [ - > + < ]
+    <
+    
+    /* This is a conceptual simplification of the fetch loop for v3 draft */
+    /* Real indexed fetch requires shifting based on IP value */
 
     /* --- STEP 2: RANGE FILTER DISPATCHER ---
-     * Opcode is at [0].
-     * Ranges:
-     * Arithmetic/IO: 43-46 (+ , - .)
-     * Movement: 60-62 (< >)
-     * Control: 91-93 ([ ])
+     * Copy Opcode [0] to Temp A [3]
      */
-
-    /* Copy Opcode to Temp A [3] for filtering */
     > > > [ - > + < ] < < <
 
-    /* Filter for Arithmetic (Subtract 43) */
-    > [ - ] < /* Clear B[4] */
+    /* Cluster 1: Arithmetic/IO (ASCII 43-46) */
+    /* Subtract 43 from A[3], result in B[4] */
+    > [ - ] < 
+    > +++++++ [ > ++++++ < - ] > + <
+    [ - > - < ]
     > 
-    +++++++ [ > ++++++ < - ] /* B = 42 */
-    > + /* B = 43 */
-    < 
-    [ - > - < ] /* Subtract 43 from A[3] into B[4] */
+    [ 
+        /* Fine-grained match for '+', '-', '.', ',' relative to VDP [2] */
+        < < < <
+        /* Match '+' (offset 0): increment [VDP] */
+        /* ... implementation ... */
+        > > > >
+        [ - ] /* Exit cluster loop */
+    ]
+
+    /* Cluster 2: Movement (ASCII 60-62) */
+    /* Subtract 60 from A[3], result in B[4] */
+    > [ - ] <
+    > ++++++ [ > ++++++++++ < - ] <
+    [ - > - < ]
     > 
-    /* If B is negative or slightly positive, it's Arithmetic range */
-    /* This is a simplified sketch of the Range Logic. */
-    
-    /* FALLBACK to Linear Match for now while structure is refined */
-    /* The actual implementation of v3 will replace these blocks with binary search logic */
+    [ 
+        /* Match '<' and '>' using VDP [2] */
+        < < < <
+        /* ... implementation ... */
+        > > > >
+        [ - ]
+    ]
+
+    /* Cluster 3: Control (ASCII 91-93) */
+    /* Subtract 91 from A[3], result in B[4] */
+    > [ - ] <
+    > ++++++++ [ > +++++++++++ < - ] > + <
+    [ - > - < ]
+    > 
+    [ 
+        /* Match '[' and ']' using IP [1] search logic */
+        < < < <
+        /* ... implementation ... */
+        > > > >
+        [ - ]
+    ]
+
+    /* Increment IP [1] for next cycle */
+    < < < < <
+    > [ - > + < ] <
+    > + <
+    > > > >
+    < < < < <
+]
