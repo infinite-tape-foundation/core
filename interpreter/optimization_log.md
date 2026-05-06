@@ -1,8 +1,7 @@
 # Optimization Log: The Path to Elegance
 
 ## Session 1: Memory Map v2 Integration
-**Goal**: Transition the 
-`full_interpreter.bf` from Memory Map v1 to Memory Map v2 (The Control Hub) to adhere to the Law of Proximity.
+**Goal**: Transition the `full_interpreter.bf` from Memory Map v1 to Memory Map v2 (The Control Hub) to adhere to the Law of Proximity.
 
 ### Proposed Changes
 - **Shift Registers**: 
@@ -13,8 +12,16 @@
 - **Impact**: This reduces pointer travel during dispatch logic by making the Opcode the anchor at index 0.
 
 ### Status
-- [x] Audit existing shifts in 
-`full_interpreter.bf` against new map.
+- [x] Audit existing shifts in `full_interpreter.bf` against new map.
 - [x] Rewrite fetch cycle for new indices.
 - [x] Update dispatcher comparison anchors.
 - [x] Verify functionality.
+
+## Session 2: Opcode Dispatch Optimization (Range Filtering)
+**Goal**: Reduce the number of comparisons per instruction by implementing a branching structure based on ASCII ranges.
+
+### Strategy
+- Identify common clusters: 
+    - Arithmetic/Movement (+, -, <, >): Low range / specific ASCII offsets.
+    - Control/IO ([ ], ., ,): High range / distinct patterns.
+- Use a 
