@@ -51,7 +51,7 @@
     > [ - < - > ] < /* A = A - 43 */
     
     /* Range Check: if 0 <= A <= 3 */
-    [ 
+    [
         /* Fine-grained matching inside Arithmetic cluster */
         /* If A == 0 -> '+' : Inc [VDP] */
         < [ - > + < ] > [ - < + > ] < 
