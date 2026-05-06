@@ -37,11 +37,11 @@
     > +++++++ [ > ++++++ < - ] > + <
     [ - > - < ]
     > 
-    [ 
+    [
         /* Fine-grained match for '+', '-', '.', ',' relative to VDP [2] */
-        /* If offset is 0, it's '+' */
+        /* Logic: If Offset==0 then '+', if Offset==X then '-'... */
         < < < <
-        /* ... Implementation of specific opcode effects here ... */
+        /* Placeholder for specific opcode effects: modify GuestTape[VDP] */
         > > > >
         [ - ] /* Exit cluster loop */
     ]
@@ -52,10 +52,10 @@
     > ++++++ [ > ++++++++++ < - ] <
     [ - > - < ]
     > 
-    [ 
+    [
         /* Match '<' and '>' using VDP [2] */
         < < < <
-        /* ... Implementation of specific opcode effects here ... */
+        /* Placeholder for movement logic: modify VDP [2] */
         > > > >
         [ - ]
     ]
@@ -66,10 +66,10 @@
     > ++++++++ [ > +++++++++++ < - ] > + <
     [ - > - < ]
     > 
-    [ 
+    [
         /* Match '[' and ']' using IP [1] search logic */
         < < < <
-        /* ... Implementation of specific opcode effects here ... */
+        /* Placeholder for bracket jumps: modify IP [1] */
         > > > >
         [ - ]
     ]
