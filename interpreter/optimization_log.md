@@ -1,35 +1,11 @@
 # Optimization Log: The Path to Elegance
 
-## Session 1: Memory Map v2 Integration
-**Goal**: Transition the `full_interpreter.bf` from Memory Map v1 to Memory Map v2 (The Control Hub) to adhere to the Law of Proximity.
+## Entry 1: Analysis of v3 Structure
+- Observed that `full_interpreter_v3.bf` implements the skeleton of Range Filtering but lacks the internal dispatch logic for Movement and Control clusters.
+- Current memory map [0-4] is structurally sound (the "Control Hub"), reducing travel distance compared to previous versions.
+- Identified a critical need to finalize the range matching logic to avoid falling back to linear searches.
 
-### Proposed Changes
-- **Shift Registers**: 
-    - Opcode: [1] -> [0]
-    - IP: [0] -> [1]
-    - VDP: [2] -> [2] (Unchanged)
-    - Nesting/Temp: [3, 4] -> [3, 4]
-- **Impact**: This reduces pointer travel during dispatch logic by making the Opcode the anchor at index 0.
-
-### Status
-- [x] Audit existing shifts in `full_interpreter.bf` against new map.
-- [x] Rewrite fetch cycle for new indices.
-- [x] Update dispatcher comparison anchors.
-- [x] Verify functionality via `full_interpreter_v2.bf`.
-
-## Session 2: Opcode Dispatch Optimization (Range Filtering)
-**Goal**: Reduce the number of comparisons per instruction by implementing a branching structure based on ASCII ranges.
-
-### Strategy
-- Identify common clusters:
-    - Arithmetic/Movement (+, -, <, >): Low range / specific ASCII offsets.
-    - Control/IO ([ ], ., ,): High range / distinct patterns.
-- Implement a coarse-grain filter before fine-grained matching to prune the search space of opcodes.
-
-### Status
-- [x] Design Range-Based Filter for common opcodes (+, -, <, >).
-- [/] Implement Binary Branching for bracket/IO tokens (Skeletal integration in v3).
-- [ ] Complete and verify `full_interpreter_v3.bf` with full range logic.
-
-### Observations
-Integrated a skeletal range filter into `full_interpreter_v3.bf`. The transition from linear subtraction to cluster-based pruning reduces pointer travel significantly, aligning with the Law of Proximity. The structure now allows for O(1) or O(log N) dispatch rather than O(N) scan.
+## Next Steps:
+1. Complete the fine-grained matching for Arithmetic cluster (+, -, ., ,).
+2. Implement the Movement cluster (<, >) using the base offset 60.
+3. Implement the Control cluster ([ , ]) using the base offset 91, integrating existing bracket search logic.
