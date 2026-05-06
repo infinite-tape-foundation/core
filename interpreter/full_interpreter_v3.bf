@@ -55,16 +55,23 @@
         /* Fine-grained matching inside Arithmetic cluster */
         /* If A == 0 -> '+' : Inc [VDP] */
         < [ - > + < ] > [ - < + > ] < 
-        /* ... Other arithmetic ops follow similarly ... */
+        
+        /* If A == 1 -> ',' : Input to [VDP] */
+        < [ - > + < ] > [ - < + > ] < 
+        
+        /* If A == 2 -> '-' : Dec [VDP] */
+        < [ - > + < ] > [ - < + > ] < 
+        
+        /* If A == 3 -> '.' : Output [VDP] */
+        < [ - > + < ] > [ - < + > ] < 
         
         /* Clean up and exit loop */
         < < < < < 
     ]
     
     /* Cluster 2: Movement (Base 60) */
-    /* Subtract remaining distance to 60... */
     > > [ - ] < < 
-    > > ++++++ [ > ++++++++ < - ] > < < /* Simplified shift for brevity in this version */
+    > > ++++++ [ > ++++++++ < - ] < < /* Load 60 into B[4] via offset from previous state */
     > [ - < - > ] <
     [
         /* Movement Dispatch Logic */
@@ -72,9 +79,8 @@
     ]
 
     /* Cluster 3: Control (Base 91) */
-    /* Subtract remaining distance to 91... */
     > > [ - ] < < 
-    > > ++++++ [ > ++++++++++ < - ] > > +++ < < 
+    > > +++++++ [ > ++++++++++ < - ] > ++ < < /* Load 91 into B[4] */
     > [ - < - > ] <
     [
         /* Control Dispatch Logic */
