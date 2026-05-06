@@ -69,11 +69,12 @@
     > > > >
     < [ - > + < ] // Move right based on VDP
     +
-    /* Return back to structure: move left to SourceBase anchor first */
-    < [ - < + > ] // This is conceptual; need rigid return path.
+    
+    /* Rigid Return Path: return pointer to IP [0] */
+    < [ - < + > ] // conceptually returning from VDP back to base anchor
+    < < < <
     
     /* --- STEP 3: IP INCREMENT ---
      * Advance the Instruction Pointer for the next cycle. */
-    < < < <
     + 
 ]
