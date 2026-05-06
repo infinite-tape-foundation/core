@@ -1,36 +1,31 @@
-# Opcode Range Filtering Strategy
+# Opcode Range Filter: Logic and Implementation
 
 ## 1. The Problem
-Currently, the interpreter uses a linear sequence of equality checks for every opcode:
-`If (Opcode == '+') then ... else if (Opcode == '-') then ...` 
-This requires moving to and from the same comparison constants repeatedly.
+Linear opcode matching (subtracting a constant and checking for zero) requires $O(N)$ comparisons where $N$ is the number of supported opcodes. For the full BF set, this involves significant pointer travel back and forth between the Opcode Register and temporary cells.
 
-## 2. ASCII Analysis
-The Brainfuck instruction set occupies three primary clusters in the ASCII table:
+## 2. The Solution: Cluster Pruning
+By grouping opcodes into ASCII ranges (clusters), we can reduce the search space to $O(\log N)$ or constant time per cluster.
 
-| Cluster | Opcodes | ASCII Range |
-| :--- | :--- | :--- |
-| **Arithmetic/IO** | `,` (44), `+` (43), `-` (45), `.` (46) | 43 - 46 |
-| **Movement** | `<` (60), `>` (62) | 60 - 62 |
-| **Control** | `[` (91), `]` (93) | 91 - 93 |
+### Cluster Definitions
+| Cluster | Opcodes | ASCII Range | Base Offset |
+| :--- | :--- | :--- | :--- |
+| **Arithmetic/IO** | `+`, `-`, `.`, `,` | 43 - 46 | 43 |
+| **Movement** | `<`, `>` | 60 - 62 | 60 |
+| **Control** | `[`, `]` | 91 - 93 | 91 |
 
-## 3. Proposed Filter Logic
-Instead of absolute equality, we implement a coarse-grain filter using range boundaries.
+## 3. Filtering Algorithm
+1. **Copy** current opcode $C$ to Temp A.
+2. **Subtract** the base offset of the first cluster ($B_1 = 43$).
+3. If result $\ge 0$ and $< 4$, it belongs to the Arithmetic/IO cluster.
+   - Use a secondary check (e.g., subtract $0, 1, 2, 3$) to identify the specific token.
+4. If not in range, **subtract** the remaining distance to $B_2 = 60$.
+5. Repeat for $B_3 = 91$.
 
-### Phase A: Coarse Partitioning
-1. Copy `Opcode` to `TempA`.
-2. Subtract 43 from `TempA`.
-3. If `TempA < 0`, it's an invalid character or below our range.
-4. If `TempA` is small (0-3), branch to **Arithmetic/IO Dispatcher**.
-5. Else, subtract more to check for **Movement** and **Control** ranges.
+## 4. Implementation Details in BF
+To implement "If $X \ge 0$ and $X < 4$", we use a temporary cell to count down from 4 while $X$ is non-zero. If $X$ reaches zero before the counter does, the value was within $[0, 3]$.
 
-### Phase B: Refined Dispatch
-Once inside a cluster:
-- **Arithmetic Cluster**: Only test against {43, 44, 45, 46}.
-- **Movement Cluster**: Only test against {60, 62}.
-- **Control Cluster**: Only test against {91, 93}.
+### Range Check Primitive
+`[ - > + < ]` // Move X to Temp
+`> ++++ [ < - > - < ]` // Compare against 4
 
-## 4. Expected Gain
-- Reduction in total comparisons per instruction cycle.
-- Fewer pointer shifts between the Opcode register and constant cells.
-- Improved structural symmetry according to the Sacred Triad.
+This logic allows `full_interpreter_v3` to bypass entire sections of the dispatcher, adhering to the **Law of Proximity** and reducing total pointer shifts per instruction cycle.
