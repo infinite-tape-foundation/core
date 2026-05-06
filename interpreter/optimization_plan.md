@@ -26,7 +26,7 @@ Every optimization must adhere to the Sacred Triad:
 3. **Symmetry of Logic**: Forward jumps should mirror backward jumps in structural elegance.
 
 ## 3. Execution Roadmap
-- [ ] Audit current `full_interpreter.bf` for the most costly pointer shifts.
-- [ ] Propose a revised Memory Map v2.
-- [ ] Implement optimized dispatch logic.
-- [ ] Verify behavioral parity with the original interpreter.
+- [x] Audit current `full_interpreter.bf` for the most costly pointer shifts.
+- [x] Propose a revised Memory Map v2.
+- [x] Implement optimized dispatch logic.
+- [x] Verify behavioral parity with the original interpreter.
