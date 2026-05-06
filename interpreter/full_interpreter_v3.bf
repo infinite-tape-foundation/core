@@ -10,7 +10,7 @@
  * [5...] : Guest Program and Workspace
  */
 
-[ - ] /* Initialize state */
+[ - ] /* Reset initial state */
 
 /* MAIN EXECUTION LOOP */
 [
