@@ -53,23 +53,27 @@
     <
     
     /* If result is 0, it was '+'. Execute VDP increment. */
-    /* The 'If Zero' pattern here requires that the cell be exactly 0 to enter the block, 
-       which in BF means we must wrap the logic in a way that triggers on zero. 
-       Since [ ] skips if zero, we use a flag cell. */
-    
-    /* Check if Temp [3] is 0 */
-    [ - > + < ] // If not zero, move 1 to Flag [4]
-    > [
+    /* To execute if zero, we move the value to a flag and check. */
+    [ - > + < ] // If not zero, Flag[4] = 1
+    >
+    [
         /* Not a '+', clear flag and skip action */
         - 
     ] <
     
-    /* This section is conceptually where the '+' action happens: 
-       Increment value at VDP. To do this in Phase I, we simulate 
-       the data pointer by moving relative to SourceBase. */
+    /* The actual action for '+': Increment value at VDP. */
+    /* Since this is Phase I, we simulate data access by moving relative to SourceBase. */
+    /* Move to VDP [2], then navigate to tape offset. */
+    < <
+    [ - > + < ] // Use Temp [3] as counter for VDP movement
+    > > > >
+    < [ - > + < ] // Move right based on VDP
+    +
+    /* Return back to structure: move left to SourceBase anchor first */
+    < [ - < + > ] // This is conceptual; need rigid return path.
     
     /* --- STEP 3: IP INCREMENT ---
      * Advance the Instruction Pointer for the next cycle. */
     < < < <
-    +
+    + 
 ]
