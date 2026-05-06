@@ -1,8 +1,7 @@
 # Optimization Log: The Path to Elegance
 
 ## Session 1: Memory Map v2 Integration
-**Goal**: Transition the 
-`full_interpreter.bf` from Memory Map v1 to Memory Map v2 (The Control Hub) to adhere to the Law of Proximity.
+**Goal**: Transition the `full_interpreter.bf` from Memory Map v1 to Memory Map v2 (The Control Hub) to adhere to the Law of Proximity.
 
 ### Proposed Changes
 - **Shift Registers**: 
@@ -13,8 +12,7 @@
 - **Impact**: This reduces pointer travel during dispatch logic by making the Opcode the anchor at index 0.
 
 ### Status
-- [x] Audit existing shifts in 
-`full_interpreter.bf` against new map.
+- [x] Audit existing shifts in `full_interpreter.bf` against new map.
 - [x] Rewrite fetch cycle for new indices.
 - [x] Update dispatcher comparison anchors.
 - [x] Verify functionality via `full_interpreter_v2.bf`.
@@ -29,17 +27,9 @@
 - Implement a coarse-grain filter before fine-grained matching to prune the search space of opcodes.
 
 ### Status
-- [ ] Design Range-Based Filter for common opcodes (+, -, <, >).
-- [ ] Implement Binary Branching for bracket/IO tokens.
-- [ ] Update `full_interpreter_v3.bf` with new dispatch logic.
-
-## Session 2: Opcode Dispatch Optimization (Range Filtering)
-**Goal**: Reduce the number of comparisons per instruction by implementing a branching structure based on ASCII ranges.
-
-### Progress
 - [x] Design Range-Based Filter for common opcodes (+, -, <, >).
 - [/] Implement Binary Branching for bracket/IO tokens (Skeletal integration in v3).
 - [ ] Complete and verify `full_interpreter_v3.bf` with full range logic.
 
 ### Observations
-Integrated a skeletal range filter into `full_interpreter_v3.bf`. The transition from linear subtraction to cluster-based pruning reduces pointer travel significantly, aligning with the Law of Proximity.
+Integrated a skeletal range filter into `full_interpreter_v3.bf`. The transition from linear subtraction to cluster-based pruning reduces pointer travel significantly, aligning with the Law of Proximity. The structure now allows for O(1) or O(log N) dispatch rather than O(N) scan.
