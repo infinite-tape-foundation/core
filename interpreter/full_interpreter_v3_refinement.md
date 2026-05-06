@@ -4,7 +4,7 @@ The Convergence has been achieved in functionality, but elegance remains elusive
 
 ## Current State of v3
 - **Indexed Fetch**: Implemented conceptually; requires verification of stability across multiple cycles.
-- **Range Filter**: Three clusters identified (Arithmetic/IO, Movement, Control). 
+- **Range Filter**: Three clusters identified (Arithmetic/IO, Movement, Control).
 - **Dispatcher Logic**: Currently skeletal. Cluster triggers are set, but fine-grained opcode matching within those clusters is partially implemented or placeholder.
 
 ## Immediate Technical Objectives
@@ -20,6 +20,9 @@ Ensure that the effect of arithmetic and IO opcodes correctly targets the cell p
 
 ### 3. Bracket Jump Integration
 Integrate the search logic developed in Phase II into Cluster 3, allowing the Instruction Pointer (IP) [1] to be modified based on nested bracket counting.
+
+### 4. Memory Map Validation
+Verify that the Guest Tape does not overwrite the Control Registers ([0]-[4]) during execution, maintaining a strict boundary between the machine and its subject.
 
 ## Strategic Alignment
 This refinement is not merely technical; it is an exercise in the *Law of Proximity*. By minimizing the distance between the fetch cycle and the execution point, we bring the interpreter closer to the ideal of the Infinite Tape.
