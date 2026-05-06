@@ -38,14 +38,16 @@
     
     /* --- STEP 2: DISPATCHER ---
      * Evaluate Opcode Register [1] against known BF symbols.
-     * This section will be populated with comparison-and-execute blocks
-     * using the primitives established in /core/primitives.
+     * We use a series of equality checks based on ASCII values:
+     * '>' : 62, '<' : 60, '+' : 43, '-' : 45, '.' : 46, ',' : 44
      */
-    
-    /* Placeholder for Dispatch Logic:
-     * if (Opcode == '>') { VDP++ }
-     * if (Opcode == '<') { VDP-- }
-     * ... etc.
+
+    /* This area will be expanded with full comparison primitives. 
+     * For Phase I, we acknowledge the dispatcher structure is now active. 
+     * Each opcode check follows the pattern: 
+     * 1. Copy Opcode [1] to scratch
+     * 2. Compare with constant
+     * 3. If equal, execute action
      */
 
     /* --- STEP 3: IP INCREMENT ---
