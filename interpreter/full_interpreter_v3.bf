@@ -37,7 +37,7 @@
     > +++++++ [ > ++++++ < - ] > + <
     [ - > - < ]
     > 
-    [
+    [ 
         /* Fine-grained match for '+', '-', '.', ',' relative to VDP [2] */
         /* If offset is 0, it's '+' */
         < < < <
@@ -52,7 +52,7 @@
     > ++++++ [ > ++++++++++ < - ] <
     [ - > - < ]
     > 
-    [
+    [ 
         /* Match '<' and '>' using VDP [2] */
         < < < <
         /* ... Implementation of specific opcode effects here ... */
@@ -66,7 +66,7 @@
     > ++++++++ [ > +++++++++++ < - ] > + <
     [ - > - < ]
     > 
-    [
+    [ 
         /* Match '[' and ']' using IP [1] search logic */
         < < < <
         /* ... Implementation of specific opcode effects here ... */
