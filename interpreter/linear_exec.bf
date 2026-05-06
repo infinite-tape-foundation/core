@@ -6,34 +6,38 @@
  * [1] : Current Opcode
  * [2] : Virtual Data Pointer (VDP) - Offset from Tape Start
  * [3] : Temporary / Logic Workspace
- * [4] : Guest Tape Start (Absolute Address = Base + 5)
- * [...]: Source Code Region
+ * [4] : Guest Tape Start / Source Code Base
+ * [...]: Source Code and Guest Workspace
  */
 
-/* Initialize IP and VDP to 0 */
-++ < < < < 
+/* Initialize IP=0, VDP=0 */
 
 /* MAIN LOOP */
 [
-    /* FETCH: Move pointer to cell (SourceBase + IP) */
-    /* SourceBase is assumed to be at a fixed offset relative to current structure */
+    /* 1. FETCH: Calculate address (SourceBase + IP) and copy to Cell[1] */
+    /* This requires a temporary move based on IP value */
+    < < < < /* Return to IP [0] */
+    [ 
+        - 
+        > > > > /* Move to Source region */
+        /* We need to shift further by the remaining IP value... */
+        /* For this phase, we implement a simplified fetch for demo purposes */
+        < < < < 
+    ]
     
-    /* This placeholder represents the core fetch loop logic */
-    /* In a full implementation, we use IP to shift into the source region */
-    
-    > > > > /* Navigate to target opcode based on IP */
-    
-    /* Copy Source[IP] -> Cell [1] */
+    /* Placeholder Fetch: Assume source is adjacent for now */
+    > > > > 
     [ - < < < < > ] 
     < < < < 
-    
-    /* DISPATCHER: Match ASCII values of BF commands */
-    /* '>' (62), '<' (60), '+' (43), '-' (45), '.' (46), ',' (44) */
-    
+
+    /* 2. DISPATCHER: Compare Opcode [1] against BF commands */
     > /* Current Opcode [1] */
     
-    /* Logic for '>' : Increment VDP [2] */
-    /* (Placeholder: Comparison against 62) */
+    /* Example: Handle '>' (62) -> Increment VDP [2] */
+    /* Logic: if (Opcode == 62) { VDP++ } */
+    /* Use a subtraction-based comparison primitive */
+    
+    /* Simplified logic flow for Linear Execution */
     
     /* Advance IP [0] */
     < 
