@@ -38,11 +38,16 @@
     [ - > - < ]
     >
     /* If B is within range [0, 3], we process Arithmetic */
-    [ 
+    [
         /* Fine-grained match for '+' (Offset 0), '-' (Offset 1), '.' (Offset 2), ',' (Offset 3) */
-        /* This block implements the specific logic for those opcodes using VDP [2] */
         < < < <
-        /* Implementation of +, -, ., , relative to VDP goes here */
+        
+        /* Match '+': Offset 0. We check if A[3]-43 == 0 by verifying B was not incremented? No, the cluster loop handles non-zero B. 
+           Wait, if B=0, it won't enter this block. Correct logic: subtract 43, if B > 0 or if a flag is set. 
+           Let us use the standard BF equality pattern: copy B to Temp, decrement, check zero. */
+        
+        /* Actual Implementation of +, -, ., , relative to VDP [2] goes here */
+        
         > > > >
         [ - ] /* Clear B to exit cluster loop */
     ]
@@ -53,10 +58,12 @@
     > ++++++ [ > ++++++++++ < - ] <
     [ - > - < ]
     >
-    [ 
+    [
         /* Match '<' and '>' using VDP [2] */
         < < < <
+        
         /* Implementation of <, > relative to VDP goes here */
+        
         > > > >
         [ - ]
     ]
@@ -67,10 +74,12 @@
     > ++++++++ [ > +++++++++++ < - ] > + <
     [ - > - < ]
     >
-    [ 
+    [
         /* Match '[' and ']' using IP [1] search logic */
         < < < <
+        
         /* Implementation of bracket jumps goes here */
+        
         > > > >
         [ - ]
     ]
