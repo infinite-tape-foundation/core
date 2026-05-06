@@ -6,42 +6,34 @@
  * [1] : Current Opcode
  * [2] : Virtual Data Pointer (VDP) - Relative to Guest Tape Start
  * [3] : Temp / Scratch
- * [4] : Source Code Start (followed by code)
- * [...]: Guest Tape Workspace (located far beyond source code)
+ * [4] : Source Code Start
+ * [...]: Guest Tape Workspace
  */
 
 /* Initialize IP and VDP to 0 */
->>++<< <
+++ < < < <
 
 /* MAIN LOOP */
 [ 
     /* FETCH: Copy Source[IP] to Current Opcode [1] */
     /* Move pointer from cell 0 to cell (4 + IP) */
-    >
-    >
-    >
-    >
-    /* Use a copy of IP in cell 3 for relative movement */
+    > > > >
     < < < <
     [ - > + < ]
     > > > >
     
     /* Fetch current opcode into [1] */
     /* We are now at cell 4+IP. Copy its value back to cell 1 */
-    [ - < < < < > ]
+    [ - < < < > ]
     < < < <
     
     /* DISPATCHER */
-    /* Logic to map opcodes to actions using comparison primitives. */
-    /* This is where the skeletal fetch-decode cycle meets execution. */
-    >
-    [ 
-        /* Check if opcode == '>'
-        /* (Placeholder logic for opcode matching via subtraction/zero check) */
-        < <
-        + 
-        > >
-    ]
+    /* Opcode mapping based on ASCII values of BF commands */
+    /* '>' is 62, '<' is 60, '+' is 43, '-' is 45, '.' is 46, ',' is 44 */
+    
+    /* Check for '>' (62) */
+    > /* Cell [1] */
+    [ - < [ - > + < ] > ] /* Simple subtraction loop as a placeholder for comparison */
     
     /* Advance IP [0] */
     < < < <
