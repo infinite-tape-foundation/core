@@ -4,52 +4,48 @@
  * Memory Map:
  * [0] : Instruction Pointer (IP)
  * [1] : Current Opcode
- * [2] : Virtual Data Pointer (DP) Offset
- * [3] : Temporary / Scratch
+ * [2] : Virtual Data Pointer (VDP)
+ * [3] : Temp / Scratch
  * [4] : Source Code Start
- * [...]: Guest Tape Workspace (relative to offset)
- * 
- * This implementation establishes the structural dispatch loop and basic
- * opcode identification for linear execution (ignoring brackets).
+ * [...]: Guest Tape Workspace
  */
 
-/* Initialize IP to 0, DP to 0 */
-[->+<] > [->+<] < < < <
+/* Initialize IP and VDP to 0 */
+>>++<< <
 
 /* MAIN LOOP */
 [ 
     /* FETCH: Copy Source[IP] to Current Opcode [1] */
-    /* Move from [0] -> [4 + IP] */
+    /* This requires moving from cell 0 to cell (4 + IP) */
     >
     >
     >
     >
-    [
-        /* Use a temporary cell to move pointer relative to IP */
-        /* We use [3] as a counter for the IP shift */
-        <
-        -
-        >
-        >
-        >
-        >
-        /* Logic to reach Source[IP] would go here in full version. 
-           For Phase I skeletal structure, we simulate the fetch of a fixed program.
-        */
-    ]
+    /* Move pointer relative to IP using a copy of IP in cell 3 */
+    < < < <
+    [ - > + < ]
+    > > > >
     
-    /* SIMULATED FETCH: For demonstration of dispatch logic, we assume current op is stored */
-    /* In a real BF interpreter, this involves complex shifting based on the value of [0] */
+    /* Fetch current opcode into [1] */
+    /* Since we are at 4+IP, move value to [1] */
+    /* Use temporary cells for the transfer */
+    [ - < < < < > ]
+    < < < <
     
     /* DISPATCHER */
-    /* Check if Current Opcode [1] == '+' (ASCII 43) */
-    /* This is an abstraction of the comparison primitive */
+    /* Check if Current Opcode [1] == '+' (43) */
+    /* Simplified logic for Phase I skeletal movement */
     >
-    <% /* Simulating check and jump */
+    [
+        /* If op is '+', increment Virtual Data Pointer [2] target */
+        /* In a real BF-in-BF, this would involve shifting based on VDP offset */
+        < <
+        + 
+        > >
+    ]
     
-    /* Advance IP */
+    /* Advance IP [0] */
     < < < <
-    >
     +
-    <
-]
+    >
+] 
