@@ -11,6 +11,7 @@
  */
 
 /* Forward Jump logic ([) - Triggered when GuestTape[VDP] == 0 */
+
 /* 1. Initialize Nesting Counter [3] to 1 */
 > > > + < < <
 
@@ -20,17 +21,17 @@
 /* 3. Search Loop */
 [
     /* Fetch opcode at SourceBase[5] + IP[0] into Opcode Register [1] */
-    > > > [ - > + < ] < < < /* Copy IP to Temp A */
-    > > > > >              /* Navigate to SourceBase */
-    < < < < [ - > + < ]     /* Shift by IP */
-    [ - < < < < + > ]       /* Copy value to Opcode[1] */
+    > > > [ - > + < ] < < < /* Copy IP to Temp A [3] */
+    > > > > >              /* Navigate to SourceBase [5] */
+    < < < < [ - > + < ]     /* Shift by IP value in Temp A */
+    [ - < < < < + > ]       /* Copy value to Opcode [1] */
     < < < < <               /* Return to IP [0] */
 
     /* If Opcode == '[' (91), increment Nesting Counter [3] */
     > 
     [ - > > + < < ]        /* Copy Opcode to Temp A [3] */
     > > 
-    +++++++ [ > ++++++ < - ] /* Subtract 43 from Temp A */
+    +++++++ [ > ++++++ < - ] /* Subtract 43 from Temp A [3] */
     < 
     ++++++++++++++++++++++++++++++
     [ - > + < ]            /* Offset from 43 to 91 is 48 */
@@ -38,7 +39,7 @@
     [ - > + < ]           /* Flag in Temp B if match */
     > 
     [ - > > + < < ]       /* If flag, increment Nesting Counter [3] */
-    < < [ - ]              /* Clear flag */
+    < < [ - ]              /* Clear flag [4] */
 
     /* If Opcode == ']' (93), decrement Nesting Counter [3] */
     > 
@@ -53,18 +54,14 @@
     [ - > + < ]           /* Flag in Temp B if match */
     > 
     [ - > > - < < ]       /* If flag, decrement Nesting Counter [3] */
-    < < [ - ]              /* Clear flag */
+    < < [ - ]              /* Clear flag [4] */
 
-    /* Check if Nesting Counter [3] is 0. If not, increment IP and continue loop. */
-    < < < 
-    [ - > + < ]           /* Move Nesting Counter to Temp B [4] */
-    > 
-    [ - ]                 /* This clears the counter; we must restore it or use a copy */
-    /* Correction: We need to check if [3] == 0 without destroying it. */
-    /* Actually, the simplest BF way to 'loop while [3] != 0' is just using [3]. */
+    /* Check if Nesting Counter [3] is 0. */
+    /* Since the loop continues while [0] IP is non-zero, we must ensure */
+    /* that the search stops when Nesting Counter [3] hits zero. */
+    /* To do this in BF, we move the counter check into a guard or use it as the loop condition. */
     
-    /* Let us refine this logic for actual integration into linear_exec.bf later. */
-    /* For now, we record the structural approach in this artifact. */
-    
-    +                    /* Increment IP for next iteration */
+    /* For now: Increment IP and continue searching until Nesting Counter is 0. */
+    /* Note: Actual integration will wrap this in a loop conditioned on cell [3]. */
+    +
 ]
