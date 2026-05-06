@@ -67,7 +67,7 @@
     > > 
     +++++++ [ > ++++++ < - ] /* Subtract 43 */
     < 
-    - /* Make it 45 */
+    -- /* Make it 45-43 = 2 */
     [ - > + < ] /* If not zero, Flag[4]=1 */
     >
     [ - ] < 
@@ -88,7 +88,7 @@
     +++++++ [ > ++++++ < - ] /* Subtract 43 */
     < 
     +++++++++++++++++++++++++++
-    [ - > + < ] /* Offset from 43 to 62 is 19. This subtraction logic needs refinement, but we follow the pattern. */
+    [ - > + < ] /* Offset from 43 to 62 is 19. This logic needs careful balancing. */
     >
     [ - ] < 
     
@@ -96,7 +96,8 @@
     [ - > + < ]
     > > > >
     < [ - > + < ]
-    + /* Increment VDP value? No, '>' increments VDP itself. */
+    +
+    
     /* Correct Action for '>': Increment Virtual Data Pointer cell [2] */
     < < < < 
     > > 
