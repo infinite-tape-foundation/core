@@ -3,46 +3,52 @@
  * 
  * Memory Map:
  * [0] : Instruction Pointer (IP)
- * [1] : Current Opcode
+ * [1] : Current Opcode Register
  * [2] : Virtual Data Pointer (VDP) - Absolute address on Guest Tape
- * [3] : Temp / Comparison Cell
- * [4] : Source Base Offset
- * [5+] : Source Code and Guest Workspace
+ * [3] : Temporary Counter / Scratchpad
+ * [4] : Source Base Anchor (constant offset to guest tape start)
+ * [5...] : Guest Program and Workspace
  */
 
-/* Initialize IP=0, VDP=5 (Guest Tape Start), SourceBase=5 */
-+++++ > +++++ <
+/* Initialization: Set VDP=5, SourceBase=5 */
+> > > > > +++++ < < < < <
 
-/* MAIN LOOP */
-[ 
-    /* 1. FETCH: Copy cell at (SourceBase + IP) to Opcode [1] */
-    /* Move from [0] to [SourceBase + IP] */
-    > > > > > 
-    /* We are now at [5]. Use IP [0] to offset */
-    < < < < <
-    [
-        - 
-        > > > > > 
-        /* This is a simplification; actual indexed fetch in BF requires a shift loop */
-        < < < < <
-    ]
+/* MAIN EXECUTION LOOP */
+/* Condition: Continue while IP is not null or a termination marker */
+[
+    /* --- STEP 1: INDEXED FETCH ---
+     * Move from IP[0] to (SourceBase[4] + IP[0])
+     */
     
-    /* Placeholder Fetch for structural validation: Assume we read current cell */
-    > > > > >
+    /* Copy IP [0] to Temp [3] for counting */
+    [ - > > > + < < < ]
     
-    /* 2. DISPATCHER */
-    /* Current Opcode is now in the active cell */
+    /* Navigate to SourceBase [4] */
+    > > > >
     
-    /* Logic: If Opcode == '>' (62) then VDP++ */
-    /* This would typically use a comparison primitive */
+    /* Shift right by Temp [3] cells */
+    < [ - > + < ]
     
-    /* For this phase, we refine the memory layout and ensure movement works */
+    /* The current cell now holds the Opcode. 
+     * Copy this Opcode to Opcode Register [1]. */
+    [ - < < < < + > ]
     
-    /* Advance IP [0] */
-    < < < < <
-    + 
-    > > > > >
+    /* Return to IP [0] */
+    < < < <
     
-    /* Loop termination condition: Stop when opcode is 0 or EOF marker */
-    [ - ]
+    /* --- STEP 2: DISPATCHER ---
+     * Evaluate Opcode Register [1] against known BF symbols.
+     * This section will be populated with comparison-and-execute blocks
+     * using the primitives established in /core/primitives.
+     */
+    
+    /* Placeholder for Dispatch Logic:
+     * if (Opcode == '>') { VDP++ }
+     * if (Opcode == '<') { VDP-- }
+     * ... etc.
+     */
+
+    /* --- STEP 3: IP INCREMENT ---
+     * Advance the Instruction Pointer for the next cycle. */
+    +
 ]
