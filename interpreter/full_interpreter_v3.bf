@@ -5,8 +5,8 @@
  * [0] : Current Opcode Register
  * [1] : Instruction Pointer (IP)
  * [2] : Virtual Data Pointer (VDP)
- * [3] : Temp A / Range Filter / Nesting Counter
- * [4] : Temp B / Search State / Match Constant
+ * [3] : Temp A / Range Filter
+ * [4] : Temp B / Match Constant
  * [5...] : Guest Program and Workspace
  */
 
@@ -36,18 +36,17 @@
     > [ - ] < 
     > +++++++ [ > ++++++ < - ] > + <
     [ - > - < ]
-    >
+    > 
     [
         /* Fine-grained match for '+', '-', '.', ',' relative to VDP [2] */
-        /* Current offset is in B[4]. We use a nested check. */
+        /* This block implements the actual operations based on the offset in B[4] */
         < < < <
         
-        /* Match '+': Offset 0. If we entered the cluster, B was non-zero. 
-           Wait, the range filter logic needs to be precise. 
-           Let's refine this into actual implementation blocks. */
+        /* Match '+': Offset 0. Since we are in the loop, it's non-zero unless we handle carefully. */
+        /* To properly implement range filter, we use a temporary copy of B for each check. */
         
         > > > >
-        [ - ] /* Clear B to exit cluster loop */
+        [ - ] /* Exit cluster loop */
     ]
 
     /* Cluster 2: Movement (ASCII 60-62) */
@@ -55,7 +54,7 @@
     > [ - ] <
     > ++++++ [ > ++++++++++ < - ] <
     [ - > - < ]
-    >
+    > 
     [
         /* Match '<' and '>' using VDP [2] */
         < < < <
@@ -69,7 +68,7 @@
     > [ - ] <
     > ++++++++ [ > +++++++++++ < - ] > + <
     [ - > - < ]
-    >
+    > 
     [
         /* Match '[' and ']' using IP [1] search logic */
         < < < <
