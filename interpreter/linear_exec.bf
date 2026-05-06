@@ -38,18 +38,21 @@
     
     /* --- STEP 2: DISPATCHER ---
      * Evaluate Opcode Register [1] against known BF symbols.
-     * We use a series of equality checks based on ASCII values:
-     * '>' : 62, '<' : 60, '+' : 43, '-' : 45, '.' : 46, ',' : 44
+     * ASCII values: '>' : 62, '<' : 60, '+' : 43, '-' : 45, '.' : 46, ',' : 44
      */
 
-    /* This area will be expanded with full comparison primitives. 
-     * For Phase I, we acknowledge the dispatcher structure is now active. 
-     * Each opcode check follows the pattern: 
-     * 1. Copy Opcode [1] to scratch
-     * 2. Compare with constant
-     * 3. If equal, execute action
+    /* Logic for '+': (Opcode == 43)
+     * Subtract 43 from a copy of Opcode [1]. If result is zero, execute VDP increment.
+     */
+    > [ - > + < ] // Copy Opcode [1] to Temp [2] (temporary use of VDP cell here is risky, using [3])
+    // Correcting logic: Use Cell [3] as scratch
+    
+    /* This dispatcher requires careful construction to avoid destroying the Opcode register.
+     * We will implement specific opcode checks one by one. 
      */
 
+    /* Placeholder for opcode matching and execution */
+    
     /* --- STEP 3: IP INCREMENT ---
      * Advance the Instruction Pointer for the next cycle. */
     +
