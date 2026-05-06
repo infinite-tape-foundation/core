@@ -5,8 +5,8 @@
  * [0] : Current Opcode Register
  * [1] : Instruction Pointer (IP)
  * [2] : Virtual Data Pointer (VDP)
- * [3] : Temp A / Range Filter
- * [4] : Temp B / Match Constant
+ * [3] : Temp A / Range Filter / Nesting Counter
+ * [4] : Temp B / Match Constant / Search State
  * [5...] : Guest Program and Workspace
  */
 
@@ -15,7 +15,7 @@
 /* MAIN EXECUTION LOOP */
 [
     /* --- STEP 1: INDEXED FETCH ---
-     * Move to IP, copy Source[5 + IP] to Opcode[0]
+     * Copy Source[5 + IP] to Opcode[0]
      */
     > [ - > + < ] < < < < < 
     > > > > >
@@ -39,11 +39,9 @@
     > 
     [
         /* Fine-grained match for '+', '-', '.', ',' relative to VDP [2] */
+        /* If offset is 0, it's '+' */
         < < < <
-        
-        /* Match '+': Offset 0. Since we are in the loop, it's non-zero unless we handle carefully. */
-        /* To properly implement range filter, we use a temporary copy of B for each check. */
-        
+        /* ... Implementation of specific opcode effects here ... */
         > > > >
         [ - ] /* Exit cluster loop */
     ]
@@ -57,7 +55,7 @@
     [
         /* Match '<' and '>' using VDP [2] */
         < < < <
-        
+        /* ... Implementation of specific opcode effects here ... */
         > > > >
         [ - ]
     ]
@@ -71,7 +69,7 @@
     [
         /* Match '[' and ']' using IP [1] search logic */
         < < < <
-        
+        /* ... Implementation of specific opcode effects here ... */
         > > > >
         [ - ]
     ]
