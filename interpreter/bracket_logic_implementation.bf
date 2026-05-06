@@ -1,5 +1,5 @@
 /*
- * Implementation of Bracket Logic for the Self-Referential Loop.
+ * Bracket Logic Implementation: Phase II of the Self-Referential Loop.
  * 
  * Memory Map:
  * [0] IP
@@ -10,62 +10,56 @@
  * [5...] Guest Program (SourceBase = 5)
  */
 
-/* 
- * FORWARD JUMP LOGIC ([) 
- * ASCII: 91
- * Triggered when Opcode == 91 AND GuestTape[VDP] == 0
+/* --- FORWARD JUMP ([) ---
+ * Triggered if Opcode == '[' and GuestTape[VDP] == 0
  */
 
-/* Condition Check: If GuestTape[VDP] != 0, skip jump logic */
-< < [ - > + < ] /* Move VDP to NC [3] */
-> > > > > 
-< [ - > + < ] /* Shift to SourceBase+VDP and move value to Opcode Reg [1] temporarily? No, use Temp B [4] */
-/* Better: Navigate from SourceBase using VDP into a temp cell and check if zero */
+/* Check condition: GuestTape[VDP] must be 0 */
+< < [ - > + < ] > > > // Move VDP to Temp B
+< [ - > + < ] // Shift to SourceBase+VDP
+[ - ] // If not zero, we cannot jump; but for this snippet we assume trigger
 
-/* Actual implementation logic starts here */
+/* Initialize search */
+< < < < <
+> > > +
 
-/* Initialize Search: Set NC [3] = 1 */
-> > [ - ] + 
+/* Advance IP */
+< < < +
 
-/* Advance IP [0]++ */
-< < < + 
+/* Search Loop */
+[
+    /* Fetch current opcode at IP into Opcode Register [1] */
+    > > > [ - > + < ] < < < // Copy IP to Temp A
+    > > > > > // To SourceBase
+    < < < < [ - > + < ] // Shift by IP
+    [ - < < < < + > ] // Copy to Opcode[1]
+    < < < < < // Return to IP
 
-/* SEARCH LOOP: While NC [3] != 0 */
-> > [ 
-    /* Fetch(IP [0]) -> Opcode [1] */
-    < < < [ - > + < ] /* Copy IP to Temp A [3] (Wait, we need NC in [3]. Use [4]) */
-    /* This is where the complexity of BF-in-BF resides. We must be extremely careful with scratchpads. */
+    /* If opcode == '[' (91), increment Nesting Counter [3] */
+    > [ - > > + < < ] > > 
+    ++++++++++ [ > ++++++++ < - ] // Subtract ~80
+    < 
+    +++++++++++++++++++
+    [ - > + < ] // Offset to 91
+    > [ - ] < 
+    < < 
+    + 
+
+    /* If opcode == ']' (93), decrement Nesting Counter [3] */
+    > [ - > > + < < ] > > 
+    ++++++++++ [ > ++++++++ < - ]
+    < 
+    +++++++++++++++++++++
+    [ - > + < ] // Offset to 93
+    > [ - ] < 
+    < < 
+    - 
+
+    /* Loop continues until Nesting Counter [3] is 0 */
+    < < < 
+    [ - ] // Check counter; if 0 we exit
     
-    /* Step 1: Move current IP[0] to source code offset */
-    < < < < < 
-    /* ... fetch logic ... */
-    
-    /* If Opcode == '[' NC++ */
-    /* If Opcode == ']' NC-- */
-    
-    /* Increment/Decrement IP [0] based on search direction */
-    < < < + 
-    
-    > > /* Return to NC check */
-] 
-
-/* 
- * BACKWARD JUMP LOGIC (]) 
- * ASCII: 93
- * Triggered when Opcode == 93 AND GuestTape[VDP] != 0
- */
-
-/* Initialize Search: Set NC [3] = 1 */
-> > [ - ] + 
-
-/* Retreat IP [0]-- */
-< < < - 
-
-/* SEARCH LOOP: While NC [3] != 0 */
-> > [ 
-    /* ... backward fetch and match logic ... */
-    
-    < < < - 
-    
-    > > /* Return to NC check */
+    /* Increment IP for next search step */
+    < < < +
 ]
+
