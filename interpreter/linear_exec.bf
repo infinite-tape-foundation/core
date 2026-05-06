@@ -14,7 +14,6 @@
 > > > > > +++++ < < < < <
 
 /* MAIN EXECUTION LOOP */
-/* Condition: Continue while IP is not null or a termination marker */
 [
     /* --- STEP 1: INDEXED FETCH ---
      * Move from IP[0] to (SourceBase[4] + IP[0])
@@ -42,18 +41,24 @@
      */
 
     /* Logic for '+': (Opcode == 43)
-     * Subtract 43 from a copy of Opcode [1]. If result is zero, execute VDP increment.
+     * We use a temporary subtraction to check equality.
      */
-    > [ - > + < ] // Copy Opcode [1] to Temp [2] (temporary use of VDP cell here is risky, using [3])
-    // Correcting logic: Use Cell [3] as scratch
+    >
+    /* Copy Opcode [1] to Temp [3] */
+    [ - > > + < < ]
     
-    /* This dispatcher requires careful construction to avoid destroying the Opcode register.
-     * We will implement specific opcode checks one by one. 
-     */
+    /* Subtract 43 from Temp [3] */
+    > > 
+    +++++++ [ > ++++++ < - ]
+    < 
+    
+    /* If result is 0, it was '+'. Execute VDP increment. */
+    /* Note: This requires a conditional block that only executes if cell [3] == 0 */
+    /* Since we are in the dispatcher, we must handle this with care. */
+    
+    /* [Placeholder for detailed opcode match logic] */
 
-    /* Placeholder for opcode matching and execution */
-    
     /* --- STEP 3: IP INCREMENT ---
      * Advance the Instruction Pointer for the next cycle. */
-    +
+    + 
 ]
