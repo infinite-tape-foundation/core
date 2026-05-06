@@ -4,39 +4,39 @@
  * Memory Map:
  * [0] : Instruction Pointer (IP)
  * [1] : Current Opcode
- * [2] : Virtual Data Pointer (VDP) - Relative to Guest Tape Start
- * [3] : Temp / Scratch
- * [4] : Source Code Start
- * [...]: Guest Tape Workspace
+ * [2] : Virtual Data Pointer (VDP) - Offset from Tape Start
+ * [3] : Temporary / Logic Workspace
+ * [4] : Guest Tape Start (Absolute Address = Base + 5)
+ * [...]: Source Code Region
  */
 
 /* Initialize IP and VDP to 0 */
-++ < < < <
+++ < < < < 
 
 /* MAIN LOOP */
-[ 
-    /* FETCH: Copy Source[IP] to Current Opcode [1] */
-    /* Move pointer from cell 0 to cell (4 + IP) */
-    > > > >
-    < < < <
-    [ - > + < ]
-    > > > >
+[
+    /* FETCH: Move pointer to cell (SourceBase + IP) */
+    /* SourceBase is assumed to be at a fixed offset relative to current structure */
     
-    /* Fetch current opcode into [1] */
-    /* We are now at cell 4+IP. Copy its value back to cell 1 */
-    [ - < < < > ]
-    < < < <
+    /* This placeholder represents the core fetch loop logic */
+    /* In a full implementation, we use IP to shift into the source region */
     
-    /* DISPATCHER */
-    /* Opcode mapping based on ASCII values of BF commands */
-    /* '>' is 62, '<' is 60, '+' is 43, '-' is 45, '.' is 46, ',' is 44 */
+    > > > > /* Navigate to target opcode based on IP */
     
-    /* Check for '>' (62) */
-    > /* Cell [1] */
-    [ - < [ - > + < ] > ] /* Simple subtraction loop as a placeholder for comparison */
+    /* Copy Source[IP] -> Cell [1] */
+    [ - < < < < > ] 
+    < < < < 
+    
+    /* DISPATCHER: Match ASCII values of BF commands */
+    /* '>' (62), '<' (60), '+' (43), '-' (45), '.' (46), ',' (44) */
+    
+    > /* Current Opcode [1] */
+    
+    /* Logic for '>' : Increment VDP [2] */
+    /* (Placeholder: Comparison against 62) */
     
     /* Advance IP [0] */
-    < < < <
-    +
+    < 
+    + 
     >
 ]
