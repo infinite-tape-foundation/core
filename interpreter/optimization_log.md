@@ -15,6 +15,6 @@
 ### Status
 - [x] Audit existing shifts in 
 `full_interpreter.bf` against new map.
-- [ ] Rewrite fetch cycle for new indices.
-- [ ] Update dispatcher comparison anchors.
+- [x] Rewrite fetch cycle for new indices.
+- [x] Update dispatcher comparison anchors.
 - [ ] Verify functionality.
