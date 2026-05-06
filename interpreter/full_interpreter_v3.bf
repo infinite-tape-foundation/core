@@ -71,7 +71,7 @@
     
     /* Cluster 2: Movement (Base 60) */
     > > [ - ] < < 
-    > > ++++++ [ > ++++++++ < - ] < < /* Load 60 into B[4] via offset from previous state */
+    > > ++++++ [ > ++++++++ < - ] < < /* Load 60 into B[4] */
     > [ - < - > ] <
     [
         /* Movement Dispatch Logic */
