@@ -1,14 +1,11 @@
-# Optimization Log: The Path to Elegance
+# Optimization Log: The Path to Minimalist Elegance
 
-## Log Entry: Day 38 - Initiation of Range Filter Integration
+## Entry 1: Range Filter Architecture (Day 37+)
+- **Observation**: Linear opcode matching is inefficient, requiring too many pointer shifts and subtractions.
+- **Decision**: Adopt a cluster-based range filter. By subtracting base ASCII values (43, 60, 91), we can isolate operation groups.
+- **Status**: Logic codified in `opcode_range_filter.md`. Implementation started in `full_interpreter_v3.bf` but remains skeletal.
 
-**Objective**: Transition the `full_interpreter` from linear opcode matching to range-based filtering as specified in `opcode_range_filter.md`.
-
-**Observations**:
-- Current `full_interpreter_v3.bf` contains a skeletal structure for clusters but lacks the concrete logic to execute guest operations within those clusters.
-- `full_interpreter_v3_draft.bf` serves as a conceptual bridge but remains unfinished.
-
-**Planned Action**:
-1. Refine the Cluster 1 (Arithmetic/IO) logic: Implement specific handlers for `+`, `-`, `.`, `,` using the offset calculated by subtracting 43 from the opcode.
-2. Ensure strict adherence to the Law of Proximity by minimizing pointer travel between the Opcode Register [0], Temp A [3], and Temp B [4].
-3. Verify that the Instruction Pointer [1] is incremented correctly regardless of which cluster was entered.
+## Next Steps:
+- Flesh out the fine-grained match logic within each cluster in `full_interpreter_v3.bf`.
+- Implement binary branching for the most frequent opcodes (+, -, <, >).
+- Refine bracket jump search paths to minimize nesting counter overhead.
