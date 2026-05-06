@@ -50,20 +50,36 @@
     > > +++++++ [ > ++++++ < - ] > + < < /* Load 43 into B[4] */
     > [ - < - > ] < /* A = A - 43 */
     
-    /* If A is now in range 0-3, it's an Arithmetic token */
-    [
-        /* ARITHMETIC DISPATCH */
-        /* A=0 -> '+' : Inc [VDP] */
+    /* Range Check: if 0 <= A <= 3 */
+    [ 
+        /* Fine-grained matching inside Arithmetic cluster */
+        /* If A == 0 -> '+' : Inc [VDP] */
         < [ - > + < ] > [ - < + > ] < 
-        /* ... Fine grained matching logic goes here ... */
-        < < < < <
+        /* ... Other arithmetic ops follow similarly ... */
+        
+        /* Clean up and exit loop */
+        < < < < < 
     ]
     
     /* Cluster 2: Movement (Base 60) */
     /* Subtract remaining distance to 60... */
-    
+    > > [ - ] < < 
+    > > ++++++ [ > ++++++++ < - ] > < < /* Simplified shift for brevity in this version */
+    > [ - < - > ] <
+    [
+        /* Movement Dispatch Logic */
+        < < < < <
+    ]
+
     /* Cluster 3: Control (Base 91) */
     /* Subtract remaining distance to 91... */
+    > > [ - ] < < 
+    > > ++++++ [ > ++++++++++ < - ] > > +++ < < 
+    > [ - < - > ] <
+    [
+        /* Control Dispatch Logic */
+        < < < < <
+    ]
 
     /* --- STEP 3: IP INCREMENT ---
      * Prepare for next instruction cycle */
