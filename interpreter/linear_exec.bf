@@ -40,40 +40,48 @@
      * ASCII values: '>' : 62, '<' : 60, '+' : 43, '-' : 45, '.' : 46, ',' : 44
      */
 
-    /* Logic for '+': (Opcode == 43)
-     * We use a temporary subtraction to check equality.
-     */
-    >
-    /* Copy Opcode [1] to Temp [3] */
-    [ - > > + < < ]
-    
-    /* Subtract 43 from Temp [3] */
+    /* Logic for '+': (Opcode == 43) */
+    > 
+    [ - > > + < < ] /* Copy Opcode[1] to Temp[3] */
     > > 
-    +++++++ [ > ++++++ < - ]
-    <
-    
-    /* If result is 0, it was '+'. Execute VDP increment. */
-    /* To execute if zero, we move the value to a flag and check. */
-    [ - > + < ] // If not zero, Flag[4] = 1
+    +++++++ [ > ++++++ < - ] /* Subtract 43 from Temp[3] */
+    < 
+    [ - > + < ] /* If not zero, Flag[4]=1 */
     >
-    [
-        /* Not a '+', clear flag and skip action */
-        - 
-    ] <
+    [ - ] < /* Clear flag if set (we need it zero for the action) */
     
     /* The actual action for '+': Increment value at VDP. */
     /* Since this is Phase I, we simulate data access by moving relative to SourceBase. */
-    /* Move to VDP [2], then navigate to tape offset. */
-    < <
-    [ - > + < ] // Use Temp [3] as counter for VDP movement
+    < < 
+    [ - > + < ] /* Use Temp[3] as counter for VDP movement */
     > > > >
-    < [ - > + < ] // Move right based on VDP
+    < [ - > + < ] /* Move right based on VDP */
     +
     
     /* Rigid Return Path: return pointer to IP [0] */
-    < [ - < + > ] // conceptually returning from VDP back to base anchor
+    < [ - < + > ]
     < < < <
+
+    /* Logic for '-': (Opcode == 45) */
+    > 
+    [ - > > + < < ] /* Copy Opcode[1] to Temp[3] */
+    > > 
+    +++++++ [ > ++++++ < - ] /* Subtract 43 */
+    < 
+    - /* Make it 45 */
+    [ - > + < ] /* If not zero, Flag[4]=1 */
+    >
+    [ - ] < 
     
+    < < 
+    [ - > + < ]
+    > > > >
+    < [ - > + < ]
+    -
+    
+    < [ - < + > ]
+    < < < <
+
     /* --- STEP 3: IP INCREMENT ---
      * Advance the Instruction Pointer for the next cycle. */
     + 
