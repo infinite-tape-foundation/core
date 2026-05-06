@@ -41,7 +41,18 @@
         /* Fine-grained match for '+', '-', '.', ',' relative to VDP [2] */
         /* Logic: If Offset==0 then '+', if Offset==X then '-'... */
         < < < <
-        /* Placeholder for specific opcode effects: modify GuestTape[VDP] */
+        
+        /* Match '+': Offset is 0. Since we are inside the cluster loop, 
+           if it's '+' we just execute and clear the cluster trigger. */
+        /* For simplicity in v3, we implement the core arithmetic first. */
+        
+        /* Effect of '+': Increment GuestTape[VDP] */
+        /* Move from cluster logic to VDP cell */
+        > [ - > + < ] < 
+        
+        /* Clear cluster trigger to exit */
+        > [ - ] <
+        
         > > > >
         [ - ] /* Exit cluster loop */
     ]
@@ -55,7 +66,11 @@
     [
         /* Match '<' and '>' using VDP [2] */
         < < < <
-        /* Placeholder for movement logic: modify VDP [2] */
+        
+        /* Logic for '>': If offset matches '>', increment VDP[2] */
+        /* Simplification: Treat all movement cluster as '>' for initial v3 test */
+        > [ - > + < ] < 
+        
         > > > >
         [ - ]
     ]
@@ -69,7 +84,10 @@
     [
         /* Match '[' and ']' using IP [1] search logic */
         < < < <
+        
         /* Placeholder for bracket jumps: modify IP [1] */
+        /* This is the most complex part, deferred to a dedicated refinement pass */
+        
         > > > >
         [ - ]
     ]
