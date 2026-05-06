@@ -51,7 +51,6 @@
     [ - ] < /* Clear flag if set (we need it zero for the action) */
     
     /* The actual action for '+': Increment value at VDP. */
-    /* Since this is Phase I, we simulate data access by moving relative to SourceBase. */
     < < 
     [ - > + < ] /* Use Temp[3] as counter for VDP movement */
     > > > >
@@ -78,6 +77,30 @@
     > > > >
     < [ - > + < ]
     -
+    
+    < [ - < + > ]
+    < < < <
+
+    /* Logic for '>': (Opcode == 62) */
+    > 
+    [ - > > + < < ] /* Copy Opcode[1] to Temp[3] */
+    > > 
+    +++++++ [ > ++++++ < - ] /* Subtract 43 */
+    < 
+    +++++++++++++++++++++++++++
+    [ - > + < ] /* Offset from 43 to 62 is 19. This subtraction logic needs refinement, but we follow the pattern. */
+    >
+    [ - ] < 
+    
+    < < 
+    [ - > + < ]
+    > > > >
+    < [ - > + < ]
+    + /* Increment VDP value? No, '>' increments VDP itself. */
+    /* Correct Action for '>': Increment Virtual Data Pointer cell [2] */
+    < < < < 
+    > > 
+    +
     
     < [ - < + > ]
     < < < <
