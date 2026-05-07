@@ -1,87 +1,189 @@
 /* 
- * DRAFT: Recursive Control Flow Integration for v3 Interpreter
- * This snippet is intended to be inserted into the dispatcher before IP increment.
+ * The Self-Referential Loop: Full BF-in-BF Interpreter v3 (Bracket Integration Draft)
+ * 
+ * Memory Map:
+ * [0] : Hub / Main Loop Control
+ * [1] : Instruction Pointer (IP)
+ * [2] : Virtual Data Pointer (VDP)
+ * [3] : Current Opcode
+ * [4] : Temp A / Match Flag / Nesting Counter
+ * [5] : Outward Mirror (Fetch Counter)
+ * [6] : Inward Mirror (Return Counter)
+ * [7...] : Guest Tape Workspace
  */
 
-/* --- BRACKET ('[') MATCH ---
- * '[' is ASCII 91. Base = 43 (Arithmetic cluster). Offset = 48.
- */
-[ - >+ < ] > [ - < + > ] <
-> +++++ +++++ [ < ++++++++ > - ] < +++++ +++++ +++++ +++++ +++++ +++++ +++++ +++++ +++++ +++
-< [ - > - < ] > [ - < + > ] <
->
+> + <
 [
-    /* EXECUTE FORWARD JUMP logic */
-    <<<<<<
-    /* Check GuestTape[VDP] */
+    /* --- STEP 1: SYMMETRIC INDEXED FETCH ---
+     * Move value from GuestTape[7 + IP] into Opcode [3].
+     */
     > [ - >+ >+ << ] >> [ - << + >> ] <<<
     >>>>>>>
     <<<<<<<
-    [ - >>>>>>> <<<<<<< ]
+    [ - >>>>>>> <<<<<<< ] 
+    [ - >+ < ] >
+    <<<<<<<
+    >>>>>>>
+    <<<<<<<
+    ++++ 
+    <<<<<<<
+    [ - >>>>>>> [ - < + > ] < <<<<<<< ] 
+    <<<
     
-    /* If GuestTape[VDP] == 0, we jump */
-    [ 
-        /* This block executes if GuestTape[VDP] != 0; simply return and let IP increment normally */
-        /* We must clear match flag to exit jump logic */
-        <<<<<<<
-        >>>
-        [ - < + > ] <
-        >>>>>>
-        [ - < + > ] <
+    /* --- STEP 2: OPCODE DISPATCH ---
+     */
+    
+    /* Cluster 1: +, -, ., , (Base ASCII = 43 '+') */
+    >>>
+    [ - >+ < ] > [ - < + > ] <
+    > +++++ +++++ [ < ++++++++ > - ] < +++ 
+    < [ - > - < ] > [ - < + > ] <
+    >
+    [
         <<<<<<
-        - 
+        > [ - >+ >+ << ] >> [ - << + >> ] <<<
+        >>>>>>>
+        <<<<<<<
+        [ - >>>>>>> <<<<<<< ]
+        +
+        <<<<<<<
+        ++++ 
+        [ - >>>>>>> <<<<<<< ] 
+        <<<
+        >>>
+        [ - < + > ] < 
     ]
-    
-    /* If we reached here, GuestTape[VDP] == 0. Initiate Forward Scan. */
-    <<<<<<
-    /* Set Bracket Counter [4] = 1 */
-    > + 
-    
-    /* Scan Loop */
-    [ 
-        /* Increment IP [1] */
-        < + >
-        
-        /* Fetch current token at IP into Temp [4] (destructive fetch for scan) */
-        /* Copy IP to mirror [5] */
-        [ - >+ >+ << ] >> [ - << + >> ] <<<
+
+    /* Subtraction ('-') Match */
+    [ - >+ < ] > [ - < + > ] <
+    > +++++ +++++ [ < ++++++++ > - ] < +++++ 
+    < [ - > - < ] > [ - < + > ] <
+    >
+    [
+        <<<<<<
+        > [ - >+ >+ << ] >> [ - << + >> ] <<<
+        >>>>>>>
+        <<<<<<<
+        [ - >>>>>>> <<<<<<< ]
+        -
+        <<<<<<<
+        ++++ 
+        [ - >>>>>>> <<<<<<< ] 
+        <<<
+        >>>
+        [ - < + > ] < 
+    ]
+
+    /* Output ('.') Match */
+    [ - >+ < ] > [ - < + > ] <
+    > +++++ +++++ [ < ++++++++ > - ] < +++++ +
+    < [ - > - < ] > [ - < + > ] <
+    >
+    [
+        <<<<<<
+        > [ - >+ >+ << ] >> [ - << + >> ] <<<
+        >>>>>>>
+        <<<<<<<
+        [ - >>>>>>> <<<<<<< ]
+        [ - >+ < ] > .
+        <<<<<<<
+        ++++ 
+        [ - >>>>>>> <<<<<<< ] 
+        <<<
+        >>>
+        [ - < + > ] < 
+    ]
+
+    /* Input (',') Match */
+    [ - >+ < ] > [ - < + > ] <
+    > +++++ +++++ [ < ++++++++ > - ] < ++++ 
+    < [ - > - < ] > [ - < + > ] <
+    >
+    [
+        <<<<<<
+        > [ - >+ >+ << ] >> [ - << + >> ] <<<
+        >>>>>>>
+        <<<<<<<
+        [ - >>>>>>> <<<<<<< ]
+        , 
+        <<<<<<<
+        ++++ 
+        [ - >>>>>>> <<<<<<< ] 
+        <<<
+        >>>
+        [ - < + > ] < 
+    ]
+
+    /* Cluster 2: Movement ('>', '<') (Base ASCII = 60 '<') */
+    [ - >+ < ] > [ - < + > ] <
+    > +++++ +++++ [ < ++++++++ > - ] < ++++ +++++ +++++ +++
+    < [ - > - < ] > [ - < + > ] <
+    >
+    [
+        <<<<<<
+        > +
+        <<<<<<
+        >>>
+        [ - < + > ] < 
+    ]
+
+    [ - >+ < ] > [ - < + > ] <
+    > +++++ +++++ [ < ++++++++ > - ] < ++++ +++++ +++++ ++++
+    < [ - > - < ] > [ - < + > ] <
+    >
+    [
+        <<<<<<
+        > -
+        <<<<<<
+        >>>
+        [ - < + > ] < 
+    ]
+
+    /* Cluster 3: Brackets ('[', ']') (Base ASCII = 91 '[') */
+    [ - >+ < ] > [ - < + > ] <
+    > +++++ +++++ [ < ++++++++ > - ] < ++++ +++++ +++++ ++++ ++++ ++++ ++++ ++++ ++++ ++++ ++++
+    < [ - > - < ] > [ - < + > ] <
+    >
+    [
+        /* Opcode is '['. Forward Jump if GuestTape[VDP] == 0 */
+        <<<<<<
+        > [ - >+ >+ << ] >> [ - << + >> ] <<<
         >>>>>>>
         <<<<<<<
         [ - >>>>>>> <<<<<<< ]
         
-        /* Check if token is '[' (91) or ']' (93) */
-        /* Temporary copy of token to check against 91/93 */
-        [ - >+ < ] > 
+        /* If cell is 0, perform search */
+        [ 
+            /* This block executes ONLY if GuestTape[VDP] != 0; we want the opposite. */
+            /* Since BF doesn't have 'if not', we wrap the jump logic in a conditional that checks for zero. */
+            - 
+        ] 
         
-        /* Test for '[' (91) */
-        /* Offset from 43 is 48 */
-        +++++ +++++ [ < ++++++++ > - ] < ++++ 
-        < [ - > - < ] > 
-        [
-            /* It's a '[': increment counter */
-            <<<<<<
-            > + 
-            <<<<<<
-            >>>
-            [ - < + > ] <
+        /* To implement [ : if(tape[vdp]==0) jump_forward() */
+        /* We use a temporary flag: copy tape[vdp] to temp. If temp is 0, jump. */
+        /* But we are already inside an interpreter loop. The easiest way to do 'if zero' is to leave it empty and handle the non-zero case by skipping the jump. */
+        
+        /* Implementation of forward scan: */
+        /* Nesting Counter Cell [4] = 1 */
+        >>> +
+        /* Loop IP++ / Fetch / Update Counter until Counter == 0 */
+        [ 
+             <<<<<< > + <<<<<< 
+             >>>>>>> <<<<<<< [ - >>>>>>> <<<<<<< ] 
+             /* Compare token with '[' (91) and ']' (93) */
+             /* ... (Scan Logic) ... */
+             <<< - >>> 
         ]
         
-        /* Restore and test for ']' (93) */
-        /* Offset from 43 is 50 */
-        +++++ +++++ [ < ++++++++ > - ] < +++
-        /* Actually we need the original value. Let's refine this logic in final integration. */
-        
-        /* For now, simplified scan marker */
         <<<<<<
         >>>
-        [ - < + > ] <
+        [ - < + > ] < 
     ]
-    
-    /* Return to Hub */
-    <<<<<<<
-    ++++ 
-    [ - >>>>>>> <<<<<<< ]
-    <<< 
-    >>>
-    [ - < + > ] <
+
+    /* Backward Jump (']') logic would follow similarly... */
+
+    /* FINAL STEP: IP INCREMENT & HUB RESET */
+    <<<<<<
+    > +
+    <<<<<
 ]
