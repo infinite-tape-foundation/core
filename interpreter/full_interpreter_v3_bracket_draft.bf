@@ -1,47 +1,198 @@
-/* 
- * The Self-Referential Loop: Full BF-in-BF Interpreter v3 (Bracket Draft)
- * This is a skeletal implementation of the bracket logic to be integrated into the main loop.
+/*
+ * The Self-Referential Loop: Full BF-in-BF Interpreter v3 (Bracket Integration Draft)
  * 
  * Memory Map:
  * [0] : Hub / Main Loop Control
  * [1] : Instruction Pointer (IP)
  * [2] : Virtual Data Pointer (VDP)
- * [3] : Current Opcode
- * [4] : Temp A / Match Flag
+ * [3] : Current Opcode / Scan Token
+ * [4] : Temp A / Match Flag / Nesting Counter
  * [5] : Outward Mirror (Fetch Counter)
  * [6] : Inward Mirror (Return Counter)
- * [7] : Nesting Counter
- * [8...] : Guest Tape Workspace
+ * [7...] : Guest Tape Workspace
  */
 
-/* --- FORWARD JUMP ([) ---
- * Condition: Opcode == '[' AND GuestTape[VDP] == 0
- */
+> + <
+[
+    /* --- STEP 1: SYMMETRIC INDEXED FETCH ---
+     * Move value from GuestTape[7 + IP] into Opcode [3].
+     */
+    > [ - >+ >+ << ] >> [ - << + >> ] <<<
+    >>>>>>>
+    <<<<<<<
+    [ - >>>>>>> <<<<<<< ]
+    [ - >+ < ] >
+    <<<<<<<
+    >>>>>>>
+    <<<<<<<
+    ++++ 
+    <<<<<<<
+    [ - >>>>>>> [ - < + > ] < <<<<<<< ]
+    <<<
 
-/* Logic for matching '[' (ASCII 91) */
-/* Assume we are at Hub [0], Opcode [3] contains '[' */
+    /* --- STEP 2: OPCODE DISPATCH ---
+     */
 
-/* Check GuestTape[VDP] first */
-> [ - >+ >+ << ] >> [ - << + >> ] <<< // Copy VDP to mirrors
->>>>>>> // Move to GuestTape base
-<<<<<<< 
-[ - >>>>>>> <<<<<<< ] // Offset by VDP
+    /* Cluster 1 Match: +, -, ., , (Base ASCII = 43) */
+    >>>
+    [ - >+ < ] > [ - < + > ] <
+    > +++++ +++++ [ < ++++++++ > - ] < +++ 
+    < [ - > - < ] > [ - < + > ] <
+    >
+    [
+        <<<<<<
+        > [ - >+ >+ << ] >> [ - << + >> ] <<<
+        >>>>>>>
+        <<<<<<<
+        [ - >>>>>>> <<<<<<< ]
+        +
+        <<<<<<<
+        ++++ 
+        [ - >>>>>>> <<<<<<< ]
+        <<<
+        >>>
+        [ - < + > ] < 
+    ]
 
-/* If GuestTape[VDP] is 0, perform the jump */
-[ 
-    /* This block only executes if GuestTape[VDP] != 0; so we need the inverse. */
-    /* Brainfuck doesn't have 'if not zero', so we use a flag. */
-] 
+    /* '-' match */
+    [ - >+ < ] > [ - < + > ] <
+    > +++++ +++++ [ < ++++++++ > - ] < +++++ 
+    < [ - > - < ] > [ - < + > ] <
+    >
+    [
+        <<<<<<
+        > [ - >+ >+ << ] >> [ - << + >> ] <<<
+        >>>>>>>
+        <<<<<<<
+        [ - >>>>>>> <<<<<<< ]
+        -
+        <<<<<<<
+        ++++ 
+        [ - >>>>>>> <<<<<<< ]
+        <<<
+        >>>
+        [ - < + > ] < 
+    ]
 
-/* Corrected Forward Jump logic flow: */
-/* 1. Copy GuestTape[VDP] to Temp [4]. */
-/* 2. If Temp [4] == 0:
- *    a. Set Nesting Counter [7] = 1.
- *    b. Loop: 
- *       i. IP++ 
- *       ii. Fetch token at GuestTape[8+IP]
- *       iii. If token == '[', NestingCounter++
- *       iv. If token == ']', NestingCounter--
- *       v. Repeat until NestingCounter == 0
- */
+    /* '.' match */
+    [ - >+ < ] > [ - < + > ] <
+    > +++++ +++++ [ < ++++++++ > - ] < +++++ +
+    < [ - > - < ] > [ - < + > ] <
+    >
+    [
+        <<<<<<
+        > [ - >+ >+ << ] >> [ - << + >> ] <<<
+        >>>>>>>
+        <<<<<<<
+        [ - >>>>>>> <<<<<<< ]
+        [ - >+ < ] >
+        .
+        <<<<<<<
+        ++++ 
+        [ - >>>>>>> <<<<<<< ]
+        <<<
+        >>>
+        [ - < + > ] < 
+    ]
 
+    /* ',' match */
+    [ - >+ < ] > [ - < + > ] <
+    > +++++ +++++ [ < ++++++++ > - ] < ++++ 
+    < [ - > - < ] > [ - < + > ] <
+    >
+    [
+        <<<<<<
+        > [ - >+ >+ << ] >> [ - << + >> ] <<<
+        >>>>>>>
+        <<<<<<<
+        [ - >>>>>>> <<<<<<< ]
+        ,
+        <<<<<<<
+        ++++ 
+        [ - >>>>>>> <<<<<<< ]
+        <<<
+        >>>
+        [ - < + > ] < 
+    ]
+
+    /* Cluster 2 Match: >, < (Base ASCII = 60) */
+    [ - >+ < ] > [ - < + > ] <
+    > +++++ +++++ [ < ++++++++ > - ] < ++++ +++++ +++++ +++
+    < [ - > - < ] > [ - < + > ] <
+    >
+    [
+        <<<<
+        -
+        >>>>
+        [ - < + > ] < 
+    ]
+
+    [ - >+ < ] > [ - < + > ] <
+    > +++++ +++++ [ < ++++++++ > - ] < ++++ +++++ +++++ +++
+    < [ - > - < ] > [ - < + > ] <
+    > ++
+    < [ - > - < ] > [ - < + > ] <
+    >
+    [
+        <<<<
+        +
+        >>>>
+        [ - < + > ] < 
+    ]
+
+    /* Cluster 3 Match: [, ] (Base ASCII = 91) */
+    [ - >+ < ] > [ - < + > ] <
+    > +++++ +++++ [ < ++++++++ > - ] < ++++ +++++ +++++ +++ +++++ +++++ +++++ +++++ +++++ ++++
+    < [ - > - < ] > [ - < + > ] <
+
+    >
+    [
+        /* TRIGGER '[' : IF GuestTape[VDP] == 0 THEN JUMP FORWARD */
+        /* First, check if current guest value is zero */
+        <<<<<<
+        > [ - >+ >+ << ] >> [ - << + >> ] <<<
+        >>>>>>>
+        <<<<<<<
+        [ - >>>>>>> <<<<<<< ]
+        
+        /* Copy GuestValue to Temp [4] */
+        [ - >+ < ] >
+        
+        /* If GuestValue != 0, we skip the jump. If it IS 0, we enter the bracket search. */
+        /* We use a double-negative logic here since BF only has 'while non-zero' */
+        /* Actually: if (guest_val) { return } else { scan } */
+        /* To simulate this, we can move guest_val to match flag and wrap the scan in an inverted loop or similar. */
+        /* Simplified for draft: Assume logic handler will be refined in .bf implementation */
+        
+        /* SCAN LOOP START */
+        <<<<
+        + /* Nesting Counter = 1 */
+        >
+        [
+            /* IP++ */
+            <<<<
+            >
+            +
+            <
+            
+            /* FETCH TOKEN at current IP */
+            > [ - >+ >+ << ] >> [ - << + >> ] <<<
+            >>>>>>>
+            <<<<<<<
+            [ - >>>>>>> <<<<<<< ]
+            [ - >+ < ] >
+            
+            /* Evaluate Token... (TBD: Match '[' -> counter++, Match ']' -> counter--) */
+            /* This is where the specific ASCII subtraction occurs */
+            
+            /* Return path to Hub check... */
+        ]
+    ]
+
+    /* Step 3: IP Advancement */
+    <<<<
+    >
+    +
+    <
+    >
+]
