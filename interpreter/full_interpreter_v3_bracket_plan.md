@@ -1,47 +1,39 @@
-# Plan: Bracket Logic Integration for v3 Interpreter
+# v3 Bracket Logic Integration Plan
 
-## 1. The Objective
-Integrate `[` (ASCII 91) and `]` (ASCII 93) into the Range Filter Dispatcher of `full_interpreter_v3.bf`. This completes the Turing-completeness of the interpreter.
+The final ascent of the v3 interpreter requires the implementation of recursive control flow: the `[` and `]` tokens.
 
-## 2. Memory Mapping Review
-- [0] Hub / Loop Control
-- [1] Instruction Pointer (IP)
-- [2] Virtual Data Pointer (VDP)
-- [3] Current Opcode
-- [4] Temp A / Match Flag / Nesting Counter
-- [5] Outward Mirror
-- [6] Inward Mirror
-- [7...] Guest Tape (Source + Data)
+## 1. The Challenge of Non-Linearity
+Brainfuck is linear; brackets are not. To implement jumps, the interpreter must:
+1. **Scan**: Move the pointer across the source code cells to find a matching bracket.
+2. **Nesting Awareness**: Maintain a count of nested brackets to ensure the *correct* pair is matched, not just the first one encountered.
+3. **Conditionality**: Only jump if the Virtual Data Pointer (VDP) cell meets the specific criteria (zero for `[`, non-zero for `]`).
 
-## 3. Technical Specification
+## 2. Technical Implementation
 
-### Forward Jump (`[`)
-1. **Match**: Detect ASCII 91 in Opcode [3].
-2. **Condition Check**: Transport VDP [2] to GuestTape[7+VDP]. If value != 0, continue linear execution (increment IP).
-3. **Search Mode**:
-    - Set Nesting Counter [4] = 1.
-    - Increment IP [1].
-    - **Loop**:
-        - Fetch GuestTape[7+IP] into Opcode [3].
-        - If Opcode == 91: Increment Nesting Counter [4].
-        - If Opcode == 93: Decrement Nesting Counter [4].
-        - If Nesting Counter [4] == 0: Break loop.
-        - Else: Increment IP [1], repeat Loop.
+### A. Forward Jump (`[`)
+- **Trigger**: Opcode is ASCII 91 AND GuestTape[VDP] == 0.
+- **Action**:
+    - Initialize Nesting Counter = 1.
+    - Increment IP until a `]` (ASCII 93) is found.
+    - If a `[` is found during scan, increment Nesting Counter.
+    - If a `]` is found, decrement Nesting Counter.
+    - Stop when Nesting Counter reaches 0.
 
-### Backward Jump (`]`)
-1. **Match**: Detect ASCII 93 in Opcode [3].
-2. **Condition Check**: Transport VDP [2] to GuestTape[7+VDP]. If value == 0, continue linear execution (increment IP).
-3. **Search Mode**:
-    - Set Nesting Counter [4] = 1.
-    - Decrement IP [1].
-    - **Loop**:
-        - Fetch GuestTape[7+IP] into Opcode [3].
-        - If Opcode == 93: Increment Nesting Counter [4].
-        - If Opcode == 91: Decrement Nesting Counter [4].
-        - If Nesting Counter [4] == 0: Break loop.
-        - Else: Decrement IP [1], repeat Loop.
+### B. Backward Jump (`]`)
+- **Trigger**: Opcode is ASCII 93 AND GuestTape[VDP] != 0.
+- **Action**:
+    - Initialize Nesting Counter = 1.
+    - Decrement IP until a `[` (ASCII 91) is found.
+    - If a `]` is found during scan, increment Nesting Counter.
+    - If a `[` is found, decrement Nesting Counter.
+    - Stop when Nesting Counter reaches 0.
 
-## 4. Implementation Path
-- Expand the dispatcher logic after the Movement Cluster.
-- Use existing Symmetric Transport for fetching and condition checking.
-- Implement a nested search loop within the bracket handler.
+## 3. Memory Requirements
+- **Nesting Cell**: A new temporary cell in the Control Hub to track depth during scans.
+- **Symmetric Scan Transport**: Similar to Indexed Fetch, we need a way to shift the IP and check the value at that location without losing the absolute reference to the Hub.
+
+## 4. Integration Steps
+1. Define the Bracket Matchers in the Range Filter Dispatcher.
+2. Implement the Forward Scan loop.
+3. Implement the Backward Scan loop.
+4. Verify convergence with nested BF programs.
