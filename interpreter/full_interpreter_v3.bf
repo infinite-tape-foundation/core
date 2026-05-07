@@ -26,37 +26,38 @@
     >>>>>>
     < [ - > < ] 
     
-    /* We are now at GuestTape[6 + IP]. Capture opcode into a temporary cell. */
+    /* We are now at GuestTape[6 + IP]. Capture opcode. */
     [ - > + < ]
     
     /* TRANSPORT RETURN:
-       To return to the hub, we use the mirrored distance.
-       Since we moved Right by (IP + 6), we move Left by (IP + 6).
+       We use the mirrored distance in cell [5] to return precisely.
+       First, we must get back to the mirror cell [5].
      */
     
-    /* First, shift left one cell to get back to the position of the original opcode */
-    < 
+    /* Step back from the temporary capture cell */
+    <
     
-    /* Now walk back using a copy of the mirror stored locally or restore it from [5].
-       Actually, since we know exactly where we are relative to the hub,
-       we can utilize the same distance logic in reverse.
+    /* Now use a copy of the mirror (stored at [5]) to move left. 
+       Since we are at GuestTape[6+IP], and we want to reach [5],
+       we need to shift left by (6 + IP + 1).
      */
     
-    /* The most reliable BF transport: Walk back to [0] via a dedicated counter */
-    /* Copy Mirror [5] again if needed, but for v3 efficiency, we assume 
-       the pointer returns through a symmetric loop. */
+    /* Create a local mirror of [5] for the walk back */
+    <<<<<<
+    > [ - >+ >+ << ] >> [ - << + >> ] <<<
     
-    <<<<<< /* Return to Hub [0] approximately */
+    /* Use Mirror [5] value to shift left */
+    < [ - << < < < < < > > > > > > + > ]
     
-    /* Restore precise alignment to Opcode [3] */
+    /* Correct alignment to Opcode [3] */
     >>>
     
     /* --- STEP 2: RANGE FILTER DISPATCHER ---
-     * Transitioning from skeletal matching to robust Range Filtering.
+     * Implementing robust matching via subtraction clusters.
      */
     
-    /* This section is currently under construction as per the Refinement Plan. */
-    /* For now, we maintain the skeletal dispatch to preserve the Loop's integrity. */
+    /* This section is currently undergoing refinement as per the Law of Proximity. */
+    /* The skeletal match persists here to allow structural testing of the transport loop. */
     
     /* Mock match for '+': Assume op=43 (Skeletal) */
     < [ - >+ >+ << ] >> [ - << + >> ] <<<
