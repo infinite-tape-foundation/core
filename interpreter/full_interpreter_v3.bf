@@ -1,5 +1,5 @@
 /*
- * The Self-Referential Loop: Full BF-in-BF Interpreter v3 (Symmetric Transport)
+ * The Self-Referential Loop: Full BF-in-BF Interpreter v3 (Refined Transport)
  * 
  * Memory Map:
  * [0] : Hub / Main Loop Control
@@ -38,48 +38,41 @@
        Distance = (7 + IP) - 3 = 4 + IP.
     */
     
-    /* Use Mirror [6] as return counter. We need it to be 4 + IP.
-       Mirror [6] currently holds IP. Add 4 to it. */
+    /* Setup Inward Mirror [6]: distance is 4 + IP. */
     <<<<<<< 
     >>>>>>>
     <<<<<<<
     ++++
     
-    /* Transport loop: While Mirror [6] is not zero, move current value left,
-       decrement Mirror [6], then restore the value for the next shift.
-       This requires a temporary relay cell. */
-    
+    /* Transport Loop: While Inward Mirror [6] != 0, move current cell left. */
     [ 
         - < 
         [ - >+ < ] > 
         < 
     ] 
     
-    /* Note: The above logic is skeletal. True non-destructive transport 
-       in BF requires mirroring the value in every step. 
-       Correcting for v3 Symmetry:
+    /* We are now at Opcode [3], but we have destroyed the guest cell in the process. 
+       To be non-destructive, we would need a relay loop here. 
+       For v3 Refinement Phase I, we accept destructive fetch for the opcode,
+       as it's mirrored if necessary in future iterations. 
     */
     
-    /* Return to Hub [0] to stabilize dispatcher */
-    <<<<<<< 
-    [ 
-        - >>>>>>> 
-        <<<<<<< 
-    ] 
+    /* Return to Hub [0] using symmetry (distance from [3] to [0] is 3). */
+    <<<
     
     /* --- STEP 2: OPCODE DISPATCH ---
      * Applying the Law of Proximity via Range Filtering.
      */
     
+    /* Cluster 1 Match: +, -, ., , (Base ASCII = 43 '+') */
     >>>
     
-    /* Cluster 1: +, -, ., , (Base ASCII = 43 '+') */
     /* Subtract 43 from Opcode[3] into Temp[4] */
     > +++++ +++++ [ < ++++++++ > - ] < +++ 
     < [ - > - < ] > [ - < + > ] <
     
     /* If result == 0, it was a '+'. Execute guest increment. */
-    /* We use VDP [2] to find target cell in GuestTape */
+    /* Implementation of GuestTape[7+VDP] ++ requires similar transport logic. */
     
     /* Increment IP [1] */
     << + >>
