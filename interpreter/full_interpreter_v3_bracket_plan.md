@@ -1,43 +1,44 @@
-# Technical Specification: Bracket Logic for v3 Interpreter
+# Implementation Plan: Recursive Control Flow (Brackets) for v3 Interpreter
 
-## The Challenge of Recursion
-The current v3 interpreter handles linear execution and basic I/O. To achieve full Turing completeness and the Self-Referential Loop, we must implement recursive control flow via `[` (ASCII 91) and `]` (ASCII 93).
+The goal is to integrate '[' (ASCII 91) and ']' (ASCII 93) into the `full_interpreter_v3.bf` dispatcher, enabling recursive control flow.
 
-## Functional Requirements
+## Technical Requirements
 
-### 1. Forward Jump (`[`) - ASCII 91
-- **Condition**: If the cell at `GuestTape[VDP]` is $0$, the Instruction Pointer (`IP`) must jump forward to the matching `]`.
+### 1. The Forward Jump ('[')
+- **Condition**: If `GuestTape[VDP]` is $0$, jump forward to the matching `]`.
 - **Mechanism**:
-    1. Verify if `GuestTape[VDP] == 0`.
-    2. If true:
+    1. Match Opcode ASCII 91.
+    2. Check value at `GuestTape[7 + VDP]` using a symmetric transport loop.
+    3. If value is non-zero, simply increment IP [1] and continue.
+    4. If value is zero:
         - Initialize a `BracketDepth` counter to 1.
-        - Increment `IP` repeatedly.
-        - At each new `IP`, fetch the opcode from `GuestTape[7+IP]`.
-        - If opcode == `[` (91), increment `BracketDepth`.
-        - If opcode == `]` (93), decrement `BracketDepth`.
-        - Stop when `BracketDepth == 0`. The current `IP` is the destination.
-    3. If false: Proceed to next instruction (`IP++`).
+        - Enter a search loop: Increment IP [1], fetch next opcode from `GuestTape[7 + IP]`.
+        - If opcode is '[', increment `BracketDepth`.
+        - If opcode is ']', decrement `BracketDepth`.
+        - Exit loop when `BracketDepth` reaches 0.
+        - The current IP now points to the matching ']'.
 
-### 2. Backward Jump (`]`) - ASCII 93
-- **Condition**: If the cell at `GuestTape[VDP]` is non-zero, the `IP` must jump backward to the matching `[`.
+### 2. The Backward Jump (']')
+- **Condition**: If `GuestTape[VDP]` is not $0$, jump backward to the matching `[`.
 - **Mechanism**:
-    1. Verify if `GuestTape[VDP] != 0`.
-    2. If true:
+    1. Match Opcode ASCII 93.
+    2. Check value at `GuestTape[7 + VDP]` using a symmetric transport loop.
+    3. If value is zero, simply increment IP [1] and continue.
+    4. If value is non-zero:
         - Initialize a `BracketDepth` counter to 1.
-        - Decrement `IP` repeatedly.
-        - At each new `IP`, fetch the opcode from `GuestTape[7+IP]`.
-        - If opcode == `]` (93), increment `BracketDepth`.
-        - If opcode == `[` (91), decrement `BracketDepth`.
-        - Stop when `BracketDepth == 0`. The current `IP` is the destination.
-    3. If false: Proceed to next instruction (`IP++`).
+        - Enter a search loop: Decrement IP [1], fetch previous opcode from `GuestTape[7 + IP]`.
+        - If opcode is ']', increment `BracketDepth`.
+        - If opcode is '[', decrement `BracketDepth`.
+        - Exit loop when `BracketDepth` reaches 0.
+        - The current IP now points to the matching '['.
 
-## Implementation Constraints in v3 Architecture
-- **Memory Pressure**: We need a dedicated cell for `BracketDepth` and temporary storage for the search loop, without corrupting the Hub or VDP.
-- **Symmetric Transport**: Each fetch during the scan must use the symmetric mirror system to avoid drifting the pointer.
-- **Infinite Loop Risk**: A missing bracket will cause the `IP` to traverse the entire guest tape; this is acceptable behavior in standard Brainfuck but requires careful boundary management of the `IP` variable.
+## Integration into v3 Dispatcher
 
-## Integration Path
-1. Define the Bracket Cluster matchers (Base ASCII 91).
-2. Implement the Forward Scan logic using a nested loop that interacts with the IP.
-3. Implement the Backward Scan logic.
-4. Integrate into the main dispatch cycle of `full_interpreter_v3.bf`.
+- **Range Filter Extension**: Brackets are in the range of 90s. I will create a new cluster match for Base 91 ('[').
+- **Memory Allocation**: Use `Temp A [4]` or introduce a new temporary cell if necessary for `BracketDepth` during the scan.
+- **Symmetric Transport**: All reads from `GuestTape` during scanning must use the existing mirrored fetch logic to ensure the Hub remains stable.
+
+## Success Criteria
+- The interpreter can execute nested loops (e.g., `[->+<]`).
+- The IP correctly skips over blocks when conditions are not met.
+- No corruption of the Control Hub occurs during deep scans.
