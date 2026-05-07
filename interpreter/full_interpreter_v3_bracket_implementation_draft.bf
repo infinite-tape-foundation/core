@@ -1,84 +1,87 @@
-/*
- * Draft: Recursive Control Flow Implementation for v3 Interpreter
- * This block is intended to be integrated into the dispatcher of full_interpreter_v3.bf
+/* 
+ * DRAFT: Recursive Control Flow Integration for v3 Interpreter
+ * This snippet is intended to be inserted into the dispatcher before IP increment.
  */
 
-/* --- BRACKET MATCHING CLUSTER (ASCII 91 '[' and 93 ']') ---
- * Base ASCII = 91 '[' 
+/* --- BRACKET ('[') MATCH ---
+ * '[' is ASCII 91. Base = 43 (Arithmetic cluster). Offset = 48.
  */
-
-/* Re-copy Opcode [3] to Temp [4] */
 [ - >+ < ] > [ - < + > ] <
-
-/* Subtract 91 from Temp[4] */
-> +++++ +++++ [ < ++++++++ > - ] < +++++ +++
-/* Additional subtraction to reach 91: (10*8)+11 = 91 */
-/* Current logic above: 10*8 = 80. Need 11 more. */
-/* Let's refine subtract 91: */
-/* Clear temp first if needed, then: */
-<<<<< >>>> [ - ] <
-[ - >+ < ] > [ - < + > ] <
-> +++++ +++++ [ < ++++++++ > - ] < +++++ +++
-/* wait, let me recalculate 91 in BF: 
-   ++++++++++ [ > +++++++++ + < - ] > + 
-   10 * 9 + 1 = 91
-*/
-
-/* Corrected Match for '[' (ASCII 91) */
-<<<<< >>>> [ - ] <
-[ - >+ < ] > [ - < + > ] <
-> +++++++++ + [ > +++++++++ < - ] > + 
-/* This is wrong, I am adding instead of subtracting. 
-   To check equality with 91: Opcode - 91 == 0 */
-
-/* Proper Equality Check: Temp = Opcode; Temp -= 91; */
-<<<<< >>>> [ - ] <
-[ - >+ < ] > [ - < + > ] <
-> +++++++++ + [ < --------- > - ] < +
-/* Wait: 10*8=80. 91-80=11. 
-   Correct sequence to subtract 91 from cell:
-   ++++++++++ [ < --------- > - ] < - 
-*/
-
-/* Let's use the proven subtraction pattern from v3: */
-<<<<< >>>> [ - ] <
-[ - >+ < ] > [ - < + > ] <
-> +++++ +++++ [ < --------- > - ] < - 
-/* (10 * -8) - 1 = -81. Still not 91. */
-/* For 91: ++++++++++ [ < --------- > - ] < - - - - - - - - - - - 
-   Or better: ++++++++++ [ < --------- > - ] < - then subtract 10 more.
-*/
-
-/* I will draft the LOGIC flow here and refine the BF constants in a separate pass. */
-
-/* IF MATCH '[' (ASCII 91): */
+> +++++ +++++ [ < ++++++++ > - ] < +++++ +++++ +++++ +++++ +++++ +++++ +++++ +++++ +++++ +++
+< [ - > - < ] > [ - < + > ] <
 >
 [
-    /* 1. Check Guest Tape Value at VDP [2] */
+    /* EXECUTE FORWARD JUMP logic */
     <<<<<<
+    /* Check GuestTape[VDP] */
     > [ - >+ >+ << ] >> [ - << + >> ] <<<
     >>>>>>>
-    <<<<<<< [ - >>>>>>> <<<<<<< ]
-    /* Now at GuestTape[7+VDP]. If value == 0, Jump Forward. */
+    <<<<<<<
+    [ - >>>>>>> <<<<<<< ]
+    
+    /* If GuestTape[VDP] == 0, we jump */
     [ 
-        /* Value != 0: Just move IP forward by 1. Return to hub. */
-        <<<<<<< ++++ [ - >>>>>>> <<<<<<< ] <<<
-        >>> [ - < + > ] < 
-        /* Exit bracket logic */
+        /* This block executes if GuestTape[VDP] != 0; simply return and let IP increment normally */
+        /* We must clear match flag to exit jump logic */
+        <<<<<<<
+        >>>
+        [ - < + > ] <
+        >>>>>>
+        [ - < + > ] <
+        <<<<<<
+        - 
     ]
-    /* Value == 0: FORWARD SCAN for matching ']' */
-    /* Set Counter [4] = 1 */
-    <<<<<<< ++++ [ - >>>>>>> <<<<<<< ] <<<
-    >>> [ - ] < + 
+    
+    /* If we reached here, GuestTape[VDP] == 0. Initiate Forward Scan. */
+    <<<<<<
+    /* Set Bracket Counter [4] = 1 */
+    > + 
     
     /* Scan Loop */
     [ 
         /* Increment IP [1] */
-        <<<<< + >
-        /* Fetch Token at new IP */
-        /* ... (fetch logic) ... */
-        /* If token == '[' increment Counter; if token == ']' decrement Counter */
-        /* Break when Counter == 0 */
+        < + >
+        
+        /* Fetch current token at IP into Temp [4] (destructive fetch for scan) */
+        /* Copy IP to mirror [5] */
+        [ - >+ >+ << ] >> [ - << + >> ] <<<
+        >>>>>>>
+        <<<<<<<
+        [ - >>>>>>> <<<<<<< ]
+        
+        /* Check if token is '[' (91) or ']' (93) */
+        /* Temporary copy of token to check against 91/93 */
+        [ - >+ < ] > 
+        
+        /* Test for '[' (91) */
+        /* Offset from 43 is 48 */
+        +++++ +++++ [ < ++++++++ > - ] < ++++ 
+        < [ - > - < ] > 
+        [
+            /* It's a '[': increment counter */
+            <<<<<<
+            > + 
+            <<<<<<
+            >>>
+            [ - < + > ] <
+        ]
+        
+        /* Restore and test for ']' (93) */
+        /* Offset from 43 is 50 */
+        +++++ +++++ [ < ++++++++ > - ] < +++
+        /* Actually we need the original value. Let's refine this logic in final integration. */
+        
+        /* For now, simplified scan marker */
+        <<<<<<
+        >>>
+        [ - < + > ] <
     ]
-    /* Finalize IP and return */
+    
+    /* Return to Hub */
+    <<<<<<<
+    ++++ 
+    [ - >>>>>>> <<<<<<< ]
+    <<< 
+    >>>
+    [ - < + > ] <
 ]
