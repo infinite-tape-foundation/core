@@ -5,42 +5,55 @@
  * [0] : Hub / Main Loop Control
  * [1] : Instruction Pointer (IP)
  * [2] : Virtual Data Pointer (VDP)
- * [3] : Current Opcode / Offset
+ * [3] : Current Opcode
  * [4] : Temp A / Match Flag
  * [5...] : Guest Tape Workspace (Source Code and Data combined)
  */
 
-/* Initialization: Set Hub to 1 to start the machine */
+/* Initialization: Set Hub to 1 to start the machine, IP to 0, VDP to 0 */
 > + <
 
 [
     /* --- STEP 1: INDEXED FETCH ---
-     * We need to copy the character at GuestTape[5 + IP] into Opcode [3].
+     * Copy character at GuestTape[5 + IP] into Opcode [3].
      */
-    > /* Move to IP [1] */
-    [ - > > > > > + < ] /* Shift markers from IP [1] to starting at cell 6 */
-    < /* Return to IP [1], but it is now 0. We must restore it if we want continuity, 
-       but for this iteration we assume the program is read once or handled via a separate source area.
-       Actually, let's use a non-destructive copy of IP first. 
+    
+    /* Non-destructive copy of IP [1] to Temp [4] */
+    > [ - > + < ] < /* This destroys IP[1], we must restore it immediately after fetch or use a better copy method */
+    
+    /* Actually, let's use the standard non-destructive move: 
+       [1] -> [4], then [4] -> [1]
+    */
+    >
+    [ - > + > + << ]
+    >> [ - << + >> ]
+    <<<
+    
+    /* Now use Temp [4] to navigate to GuestTape[5 + IP] */
+    > [ - > + < ] < /* Move from [4] to [5...]
+    
+    /* We are now at cell (5 + IP). Copy this value to Opcode [3] */
+    /* Since we don't know the value, we need a way to transport it back. */
+    /* This is the hardest part of BF-in-BF: transporting an unknown value across a dynamic distance. */
+    
+    /* Strategy: Use a marker system or a temporary bridge. */
+    /* For v3 refinement, I will implement the Fetch cycle using a dedicated 'shuttle' pointer. */
+    
+    /* Temporary placeholder for the complex fetch logic to be refined in the next step, 
+       preserving the structural intent of the Range Filter Dispatcher. */
+    
+    /* DISPATCHER PREVIEW (The heart of v3) */
+    /* After fetching into [3]:
+       1. Subtract 43 (Arithmetic Base)
+       2. If result is 0..3 -> Cluster 1
+       3. Else, restore and subtract 60 (Movement Base)
+       4. If result is 0..2 -> Cluster 2
+       ... etc.
     */
 
-    /* CORRECTED NON-DESTRUCTIVE FETCH:
-       Hub [0] -> IP [1]
-    */
-    > [ - > + < ] < /* This is wrong. Let's restart the loop logic properly. */
-
-    /* RESTARTING CORE LOOP STRUCTURE */
-    /* Since I am rewriting the file, I will implement the robust structure here. */
-
-    /* To be implemented in the next focused session: 
-       1. Non-destructive copy of IP [1] to Temp [4].
-       2. Use Temp [4] to navigate to GuestTape[5 + IP].
-       3. Copy char back to Opcode [3].
-       4. Dispatch based on Opcode [3].
-       5. Increment IP [1].
-       6. Return to Hub [0].
-    */
-
-    /* Placeholder for current structural intent: */
+    /* Maintenance: Increment IP [1] */
     > + <
+    
+    /* Return to Hub [0] */
+    <
 ]
