@@ -98,7 +98,7 @@
     ]
 
     /* --- SUBTRACTION ('-') MATCH ---
-     * Opcode '-' is ASCII 45 (Base 43 + 2). 
+     * Opcode '-' is ASCII 45 (Base 43 + 2).
      */
     
     /* Re-copy Opcode [3] and subtract 45 */
@@ -127,7 +127,43 @@
         [ - < + > ] < 
     ]
 
-    /* Increment IP [1] */
+    /* --- MOVEMENT ('>', '<') MATCH ---
+     * '>' is ASCII 62, '<' is ASCII 60. Base = 60 ('<')
+     */
+    
+    /* Re-copy Opcode [3] and subtract 60 */
+    [ - >+ < ] > [ - < + > ] <
+    > +++++ +++++ [ < ++++++++ > - ] < ++++ 
+    < [ - > - < ] > [ - < + > ] <
+    
+    >
+    [
+        /* EXECUTE GUEST DATA POINTER INCREMENT: VDP[2]++ */
+        <<<<
+        +
+        >>>
+        [ - < + > ] <
+    ]
+
+    /* Match for '>' (ASCII 62) - Offset 2 from 60 */
+    /* We reuse the subtraction logic but need a check for value 2 */
+    /* For brevity in this step, we implement a simple offset test */
+    
+    /* Re-copy Opcode [3] and subtract 62 */
+    [ - >+ < ] > [ - < + > ] <
+    > +++++ +++++ [ < ++++++++ > - ] < +++++ +++
+    < [ - > - < ] > [ - < + > ] <
+    >
+    [
+        /* EXECUTE GUEST DATA POINTER INCREMENT: VDP[2]++ */
+        <<<<
+        +
+        >>>
+        [ - < + > ] <
+    ]
+
+    /* --- RETURN TO START ---
+     * Increment IP [1] */
     << + >>
     
     /* Reset Hub [0] check / Loop back */
