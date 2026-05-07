@@ -138,16 +138,15 @@
     
     >
     [
-        /* EXECUTE GUEST DATA POINTER INCREMENT: VDP[2]++ */
+        /* EXECUTE GUEST DATA POINTER DECREMENT: VDP[2]-- */
         <<<<
-        +
+        -
         >>>
         [ - < + > ] <
     ]
 
     /* Match for '>' (ASCII 62) - Offset 2 from 60 */
     /* We reuse the subtraction logic but need a check for value 2 */
-    /* For brevity in this step, we implement a simple offset test */
     
     /* Re-copy Opcode [3] and subtract 62 */
     [ - >+ < ] > [ - < + > ] <
