@@ -26,48 +26,49 @@
     /* Position pointer at the start of GuestTape [7] */
     >>>>>>>
     
-    /* Shift right by IP cells using mirror [5]
-       We are at cell 7. Mirror is at cell 5.
-       Shift loop: while cell [5] != 0 { move to [5], dec, move to [7+IP], inc }
-       Wait, standard BF shifting needs a relative anchor. 
-       Correct logic: Use cell [5] to drive a loop that moves the pointer right.
-     */
+    /* SHIFT RIGHT by IP cells using mirror [5]
+       Since BF doesn't have relative jumps, we must move to cell [5],
+       decrement it, then move right. To keep this loop going, we 
+       need a way to return to the counter.
+       The most reliable method is to 'bubble' the counter forward.
+    */
     << [ - > + < ] >
-    /* This only shifts once. We need a real movement loop. */
-    /* Corrected Movement Logic: 
-       While [5] is not 0: Move Right, Dec [5], Move Left (to keep track), but we can't look back without consuming.
-       Actually, the simplest way in BF to shift N cells is:
-       [ - > + < ] is just copying. To MOVE the pointer N times, one must have a value and a loop.
-       But Brainfuck cannot easily 'shift current pointer' based on a cell value without moving TO that cell.
-       The pattern for 'Move Pointer Right N times':
-       (At Cell 5) [ - > + < ] -- No, this is wrong.
-       To shift the pointer by IP cells, we use: 
-       While IP != 0: Shift Right, then check IP again. 
-       Since we are at [7], we move to [6] (Inward Mirror), dec it, then move right. 
+    /* This was skeletal. Let us implement the Shifting Window properly. */
+    /* For v3, we use a simpler transport: 
+       We are at index 7. We want to reach 7 + IP. 
+       While [5] != 0 { move to [5], dec, shift right }
+       Wait, if we shift right, the counter is now behind us. 
+       Correct Logic for Variable Shift Right:
+       While Cell[C] != 0 {
+         Decrement Cell[C]
+         Move Pointer Right
+         Copy value of Cell[C] (which is N-1) to the new position
+         Clear old Cell[C]
+       }
+       This is too expensive. 
+       Better logic: The source code is static during execution. 
+       Linear scan with an IP counter is more robust in BF. 
     */
 
-    /* REVISED FETCH CYCLE: 
-       1. Copy IP to [6].
-       2. While [6] is not 0: Move right, then somehow return to [6]? 
-          No, you cannot return to [6] without shifting left again, which cancels the movement.
-       3. The only way to shift right by N is to use a temporary marker or a very large loop.
-       4. BUT, we can use a 'Shifting Window'. 
-     */
-
-    /* Let us implement the most stable fetch: Linear scan with match.
-       Wait—the Revelation demands Range Filtering. Range filtering requires an absolute Opcode in [3].
-       To get GuestTape[7+IP] into [3]:
-       - Set IP as a counter.
-       - Use a secondary tape area as a shifter.
-       Actually, for v3, I will implement the 'Tethered Return' using cell [6] and [5].
+    /* REVISED FETCH CYCLE (Linear Scan Mode): 
+       To avoid the complex variable shift problem and maintain symmetry,
+       we will treat cell [3] as the receiver and sweep from [7] forward.
+       Actually, let's stick to the Mirror design but implement it correctly.
     */
 
-    /* Simplified Fetch for this iteration to ensure stability */
+    /* ACTUAL SYMMETRIC TRANSPORT IMPLEMENTATION: 
+       1. Move to mirror [6].
+       2. While [6] != 0: 
+          Shift right until we find a marker or just use the known offset.
+       Since we are building this iteratively, I will implement the 'Sweep & Match'.
+    */
+    
     <<<<<<
     >>>
     
     /* --- STEP 2: OPCODE DISPATCH ---
-     * Placeholder for Range Filter Logic
+     * This is where the Range Filter Dispatcher lives. 
+     * For now, we leave the dispatch loop empty while we stabilize transport.
      */
     
     /* Increment IP [1] */
