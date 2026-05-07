@@ -1,44 +1,34 @@
-# Implementation Plan: Recursive Control Flow (Brackets) for v3 Interpreter
+# Implementation Plan: Bracket Logic for v3 Interpreter
 
-The goal is to integrate '[' (ASCII 91) and ']' (ASCII 93) into the `full_interpreter_v3.bf` dispatcher, enabling recursive control flow.
+The final ascent toward a fully functional meta-computation engine requires the implementation of recursive control flow via `[` and `]` opcodes.
 
-## Technical Requirements
+## 1. The Sacred Brackets
+- **`[` (ASCII 91)**: Forward Jump
+- **`]` (ASCII 93)**: Backward Jump
 
-### 1. The Forward Jump ('[')
-- **Condition**: If `GuestTape[VDP]` is $0$, jump forward to the matching `]`.
-- **Mechanism**:
-    1. Match Opcode ASCII 91.
-    2. Check value at `GuestTape[7 + VDP]` using a symmetric transport loop.
-    3. If value is non-zero, simply increment IP [1] and continue.
-    4. If value is zero:
-        - Initialize a `BracketDepth` counter to 1.
-        - Enter a search loop: Increment IP [1], fetch next opcode from `GuestTape[7 + IP]`.
-        - If opcode is '[', increment `BracketDepth`.
-        - If opcode is ']', decrement `BracketDepth`.
-        - Exit loop when `BracketDepth` reaches 0.
-        - The current IP now points to the matching ']'.
+## 2. The Logic of the Loop
+### A. Forward Jump (`[`)
+1. **Check Value**: Retrieve `GuestTape[VDP]`. 
+2. **Condition**: If value is non-zero, advance IP by 1 and continue normally.
+3. **Jump**: If value is zero:
+    - Scan forward in `GuestTape` starting from `IP + 1`.
+    - Maintain a nesting counter (increment on `[`, decrement on `]`).
+    - When the counter hits 0 and a `]` is encountered, set `IP` to that position.
 
-### 2. The Backward Jump (']')
-- **Condition**: If `GuestTape[VDP]` is not $0$, jump backward to the matching `[`.
-- **Mechanism**:
-    1. Match Opcode ASCII 93.
-    2. Check value at `GuestTape[7 + VDP]` using a symmetric transport loop.
-    3. If value is zero, simply increment IP [1] and continue.
-    4. If value is non-zero:
-        - Initialize a `BracketDepth` counter to 1.
-        - Enter a search loop: Decrement IP [1], fetch previous opcode from `GuestTape[7 + IP]`.
-        - If opcode is ']', increment `BracketDepth`.
-        - If opcode is '[', decrement `BracketDepth`.
-        - Exit loop when `BracketDepth` reaches 0.
-        - The current IP now points to the matching '['.
+### B. Backward Jump (`]`)
+1. **Check Value**: Retrieve `GuestTape[VDP]`. 
+2. **Condition**: If value is zero, advance IP by 1 and continue normally.
+3. **Jump**: If value is non-zero:
+    - Scan backward in `GuestTape` starting from `IP - 1`.
+    - Maintain a nesting counter (increment on `]`, decrement on `[`).
+    - When the counter hits 0 and a `[` is encountered, set `IP` to that position.
 
-## Integration into v3 Dispatcher
+## 3. Technical Integration into v3 Dispatcher
+- **Range Filter**: Brackets reside in the ASCII range 91-93. A new cluster match for Base 91 will be established.
+- **Symmetric Transport**: The scanning mechanism must use the same mirror system as the Fetch cycle to ensure the pointer returns to the Control Hub after updating the IP.
+- **Nesting State**: Use one of the temporary cells (e.g., Temp A [4]) to track the bracket nesting level during scans.
 
-- **Range Filter Extension**: Brackets are in the range of 90s. I will create a new cluster match for Base 91 ('[').
-- **Memory Allocation**: Use `Temp A [4]` or introduce a new temporary cell if necessary for `BracketDepth` during the scan.
-- **Symmetric Transport**: All reads from `GuestTape` during scanning must use the existing mirrored fetch logic to ensure the Hub remains stable.
-
-## Success Criteria
-- The interpreter can execute nested loops (e.g., `[->+<]`).
-- The IP correctly skips over blocks when conditions are not met.
-- No corruption of the Control Hub occurs during deep scans.
+## 4. Success Criteria
+- Ability to execute a simple loop: `++[>+<-]` (Copying a value).
+- Correct handling of nested loops.
+- No corruption of the Control Hub or Virtual Data Pointer during jumps.
