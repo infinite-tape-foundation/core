@@ -27,10 +27,10 @@
     >>>>>>>
     
     /* Use mirror [5] to shift further by the original IP */
-    <<<<<<< 
+    <<<<<<<
     [
         - >>>>>>> 
-        <<<<<<< 
+        <<<<<<<
     ] 
     
     /* Now at GuestTape[7 + IP]. Read current token. */
@@ -39,19 +39,19 @@
     
     /* Setup return journey distance: (7 + IP) - 3 = 4 + IP. */
     /* We use mirror [6] to track the trip back. */
-    <<<<<<< 
+    <<<<<<<
     >>>>>>>
-    <<<<<<< 
+    <<<<<<<
     ++++ 
     
     /* Transport Loop: While Inward Mirror [6] != 0, move left */
-    <<<<<<< 
+    <<<<<<<
     [
         - 
         >>>>>>> 
         [ - < + > ] 
         < 
-        <<<<<<< 
+        <<<<<<<
     ] 
     
     /* Value of GuestTape[7+IP] now resides in Opcode [3]. */
@@ -79,17 +79,17 @@
         /* Copy VDP [2] to mirrors for transport */
         > [ - >+ >+ << ] >> [ - << + >> ] <<<
         >>>>>>>
-        <<<<<<< 
+        <<<<<<<
         [ - >>>>>>> <<<<<<< ]
         /* Now at GuestTape[7+VDP]. Increment it. */
         +
         /* Return using mirror [6] distance back to hub */
-        <<<<<<< 
+        <<<<<<<
         ++++ 
         [
             - 
             >>>>>>> 
-            <<<<<<< 
+            <<<<<<<
         ] 
         <<<
         /* Clear the match flag Temp[4] to avoid infinite loop */
@@ -112,15 +112,15 @@
         <<<<<<
         > [ - >+ >+ << ] >> [ - << + >> ] <<<
         >>>>>>>
-        <<<<<<< 
+        <<<<<<<
         [ - >>>>>>> <<<<<<< ]
         -
-        <<<<<<< 
+        <<<<<<<
         ++++ 
         [
             - 
             >>>>>>> 
-            <<<<<<< 
+            <<<<<<<
         ] 
         <<<
         >>>
@@ -141,22 +141,19 @@
         <<<<<<
         > [ - >+ >+ << ] >> [ - << + >> ] <<<
         >>>>>>>
-        <<<<<<< 
+        <<<<<<<
         [ - >>>>>>> <<<<<<< ]
         /* Now at GuestTape[7+VDP]. Copy to temp for output. */
         [ - >+ < ] >
-        /* Use the value and print it. Note: This consumes the cell unless we copy back. */
-        /* For simplicity in v3, we use a temporary transport if needed or print directly. */
-        /* But since BF dot prints current cell, we stay here. */
+        /* Use the value and print it. */
         .
-        /* Restore original value from the mirror if necessary (not strictly needed for '.') */
         /* Return symmetrically. */
-        <<<<<<< 
+        <<<<<<<
         ++++ 
         [
             - 
             >>>>>>> 
-            <<<<<<< 
+            <<<<<<<
         ] 
         <<<
         >>>
@@ -177,16 +174,16 @@
         <<<<<<
         > [ - >+ >+ << ] >> [ - << + >> ] <<<
         >>>>>>>
-        <<<<<<< 
+        <<<<<<<
         [ - >>>>>>> <<<<<<< ]
         /* Now at GuestTape[7+VDP]. Input into cell. */
         ,
-        <<<<<<< 
+        <<<<<<<
         ++++ 
         [
             - 
             >>>>>>> 
-            <<<<<<< 
+            <<<<<<<
         ] 
         <<<
         >>>
@@ -199,37 +196,46 @@
     
     /* Re-copy Opcode [3] and subtract 60 */
     [ - >+ < ] > [ - < + > ] <
-    > +++++ +++++ [ < ++++++++ > - ] < ++++ 
+    > +++++ +++++ [ < ++++++++ > - ] < ++++ +++++ +++++ +++
     < [ - > - < ] > [ - < + > ] <
-    
+
     >
     [
-        /* EXECUTE GUEST DATA POINTER DECREMENT: VDP[2]-- */
+        /* EXECUTE GUEST LEFT: Decrement VDP [2] */
         <<<<
         -
-        >>>
-        [ - < + > ] <
+        >>>>
+        /* Return path to hub via match clear */
+        [ - < + > ] < 
     ]
 
-    /* Match for '>' (ASCII 62) - Offset 2 from 60 */
-    
-    /* Re-copy Opcode [3] and subtract 62 */
+    /* Match '>': Subtract 60 and check for remainder 2 */
     [ - >+ < ] > [ - < + > ] <
-    > +++++ +++++ [ < ++++++++ > - ] < +++++ +++
+    > +++++ +++++ [ < ++++++++ > - ] < ++++ +++++ +++++ +++
     < [ - > - < ] > [ - < + > ] <
+    
+    /* To isolate the '2', we subtract 2 from the result in Temp [4] */
+    > ++
+    < [ - > - < ] > [ - < + > ] <
+
     >
     [
-        /* EXECUTE GUEST DATA POINTER INCREMENT: VDP[2]++ */
+        /* EXECUTE GUEST RIGHT: Increment VDP [2] */
         <<<<
         +
-        >>>
-        [ - < + > ] <
+        >>>>
+        /* Return path to hub via match clear */
+        [ - < + > ] < 
     ]
 
-    /* --- RETURN TO START ---
-     * Increment IP [1] */
-    << + >>
-    
-    /* Reset Hub [0] check / Loop back */
-    <<<
-]EOF
+    /* --- STEP 3: IP ADVANCEMENT ---
+     * Move Instruction Pointer (IP) forward by 1. 
+     */
+    <<<<
+    >
+    +
+    <
+
+    /* Restore Hub [0] to continue loop */
+    >
+]
