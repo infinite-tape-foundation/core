@@ -166,23 +166,19 @@
             /* If guest tape value is NOT 0, we do NOT jump. We must clear the match flag. */
             [ - >+ < ] >
             [ - < + > ] <
-            /* This part is tricky in BF; for this draft, let's assume if not 0, we just return to main loop. */
-            /* ACTUAL JUMP LOGIC: Only enter if Cell [2+Offset] was 0. */
-            /* To simulate 'if zero', we use a temp copy and check. */
             <<<<<<
             /* Set Nesting Counter [4] = 1 */
-            > + 
+            > +
             /* Search Loop */
             [ 
                 /* Increment IP [1] */
                 < + >
                 /* Fetch token at GuestTape[7 + IP] */
-                < [ - >+ >+ << ] >> [ - << + >> ] <<< 
+                < [ - >+ >+ << ] >> [ - << + >> ] <<<
                 >>>>>>>
                 <<<<<<<
                 [ - >>>>>>> <<<<<<< ]
-                /* Check if token is '[' (91) or ']' (93) */
-                /* ... simplified nesting logic for draft ... */
+                /* Simplified nesting logic for draft: check if bracket and decr counter */
                 - 
             ]
             <<<<<<
