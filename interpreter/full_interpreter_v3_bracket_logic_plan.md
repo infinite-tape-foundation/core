@@ -1,46 +1,31 @@
-# Bracket Logic Integration Plan: v3 Interpreter
+# Bracket Logic Plan for v3 Interpreter
 
-The final frontier of the v3 interpreter is the implementation of recursive control flow: `[` and `]`.
+## 1. The Challenge of Recursion
+Brackets `[` and `]` introduce non-linear control flow. To implement them in BF, the interpreter must be able to scan the source code (the guest tape) while keeping track of nesting levels.
 
-## 1. Memory Requirements
-To implement bracket jumps, we need additional state cells in the Control Hub to track nesting levels during scans.
+## 2. Forward Jump (`[`) Logic
+When Opcode == ASCII 91 (`[`):
+1. **Check VDP Target**: Move to `GuestTape[7 + VDP]`. If value != 0, do nothing (continue to next instruction).
+2. **Scan Forward**: If value == 0:
+    - Increment IP until a matching `]` is found.
+    - **Nesting Depth Counter**: Maintain a temporary cell for depth.
+        - Encounter `[`: increment depth.
+        - Encounter `]`: decrement depth.
+    - When depth becomes -1, the matching `]` has been reached.
+    - Set IP to this position.
 
-- **Nest Level [8]**: Tracks depth of nested brackets during a scan.
-- **Scan Direction [9]**: (Optional) Flag for forward vs backward movement.
+## 3. Backward Jump (`]`) Logic
+When Opcode == ASCII 93 (`]`):
+1. **Check VDP Target**: Move to `GuestTape[7 + VDP]`. If value == 0, do nothing (continue to next instruction).
+2. **Scan Backward**: If value != 0:
+    - Decrement IP until a matching `[` is found.
+    - **Nesting Depth Counter**:
+        - Encounter `]`: increment depth.
+        - Encounter `[`: decrement depth.
+    - When depth becomes -1, the matching `[` has been reached.
+    - Set IP to this position.
 
-## 2. The Forward Jump (`[`) - ASCII 91
-**Logic**: 
-1. Match ASCII 91.
-2. Check GuestTape[VDP].
-3. If $
-eq 0$: Advance IP by 1 and continue.
-4. If $= 0$:
-    - Set Nest Level = 0.
-    - Move IP forward until GuestTape[IP] == `]` AND Nest Level == 0.
-    - Every `[` encountered increments Nest Level.
-    - Every `]` encountered decrements Nest Level.
-    - Set IP to the position of the matching `]`.
-
-## 3. The Backward Jump (`]`) - ASCII 93
-**Logic**:
-1. Match ASCII 93.
-2. Check GuestTape[VDP].
-3. If $= 0$: Advance IP by 1 and continue.
-4. If $
-eq 0$:
-    - Set Nest Level = 0.
-    - Move IP backward until GuestTape[IP] == `[` AND Nest Level == 0.
-    - Every `]` encountered increments Nest Level.
-    - Every `[` encountered decrements Nest Level.
-    - Set IP to the position of the matching `[`.
-
-## 4. Technical Implementation Challenges
-- **The Scan Loop**: We must implement a loop that moves the IP, fetches the character at the new IP, compares it to the target bracket, updates the nest level, and repeats.
-- **Symmetric Transport in Scan**: Each step of the scan requires moving from Hub $	o$ GuestTape[7+IP] $	o$ Hub.
-- **Pointer Stability**: Ensuring the IP is updated correctly without corrupting other control cells.
-
-## 5. Integration Sequence
-1. Update Memory Map documentation.
-2. Implement `[` match logic $	o$ Forward Scan $	o$ IP update.
-3. Implement `]` match logic $	o$ Backward Scan $	o$ IP update.
-4. Verify with nested loops: `++[>+++<-]>
+## 4. Implementation Strategy in v3
+- **New Memory Cells**: We may need dedicated cells for the Nesting Depth Counter and a temporary search buffer beyond the current Hub/Mirror setup.
+- **Search Loop**: Implement a loop that utilizes the Symmetric Indexed Fetch to read tokens sequentially without losing the absolute reference to the Control Hub.
+- **IP Update**: The final step of the jump must write the new address directly into IP [1].
