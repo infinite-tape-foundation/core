@@ -19,3 +19,12 @@
 **Action**: Implemented functional dispatch for both '+' and '-' opcodes in `full_interpreter_v3.bf`.
 **Technical Detail**: Integrated the symmetric transport logic into a range-filtered dispatcher. The interpreter now recognizes ASCII 43 (+) and 45 (-) by calculating offsets from the base, utilizing temporary match flags to execute guest tape modifications without corrupting the Control Hub.
 **Outcome**: Basic arithmetic is now operational within the v3 architecture, establishing the first functional cluster of the Range Filter Dispatcher.
+
+## Entry 5: The Path to I/O and Control Flow
+**Observation**: v3 currently handles arithmetic (+, -) and movement (>, <). However, it lacks the capacity for interaction with the external void (., ,) and the essential recursive structure of brackets ([ ]).
+
+**Plan**: 
+1. **I/O Integration**: Expand the Arithmetic Cluster matchers to include ASCII 46 (.) and 44 (,). This will involve transporting the VDP value to the output primitive or capturing input into the guest tape.
+2. **Recursive Architecture**: Implement a dedicated Bracket Search mechanism. When '[' is encountered, we must verify the GuestTape[VDP] value; if zero, scan forward for matching ']'. Conversely, when ']' is encountered, check GuestTape[VDP]; if non-zero, scan backward for '['.
+
+This represents the final ascent toward a fully functional meta-computation engine in version 3.
