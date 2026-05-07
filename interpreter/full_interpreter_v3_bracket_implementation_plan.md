@@ -1,50 +1,43 @@
-# Detailed Implementation Plan: Recursive Control Flow for v3 Interpreter
+# Implementation Plan: v3 Bracket Logic Integration
 
-## 1. Architectural Integration
+## Objective
+Integrate recursive control flow (`[` and `]`) into the `full_interpreter_v3.bf` artifact, completing the meta-computation engine.
 
-The recursive control flow (`[` and `]`) will be integrated into the Range Filter Dispatcher as a new cluster (Cluster 2) or an extension of the existing logic, targeting ASCII 91 (`[`) and 93 (`]`).
+## Technical Architecture
 
-## 2. Memory Map Extension
-To support bracket scanning without corrupting the core Hub, we will utilize:
-- **Cell [4]**: Re-used as the Match Flag / Bracket Counter during scan operations.
-- **Symmetric Mirrors [5, 6]**: Used to travel between the Hub, the Instruction Pointer (IP), and the Source Code region.
+### 1. The Bracket Cluster Matcher
+- **Target Range**: ASCII 91 (`[`) to 93 (`]`).
+- **Logic**: Subtract 91 from the Current Opcode [3].
+- **Branches**:
+    - Result 0 $ightarrow$ Process Forward Jump (`[`).
+    - Result 2 $ightarrow$ Process Backward Jump (`]`).
 
-## 3. The Forward Jump (`[` - ASCII 91)
+### 2. Forward Jump (`[`) Workflow
+- **Condition**: Triggered if GuestTape[VDP] == 0.
+- **Search Loop**:
+    1. Set Nesting Counter [4] = 1.
+    2. Increment IP [1].
+    3. Fetch token at GuestTape[7 + IP].
+    4. If token == `[` (91), increment counter.
+    5. If token == `]` (93), decrement counter.
+    6. Repeat until counter is 0.
+- **Exit State**: IP points to the matching `]`. Linear execution resumes from there.
 
-### Logic Flow:
-1. **Match Opcode 91**: Identify `[` via range filter.
-2. **Check Guest State**: 
-    - Transport VDP [2] to GuestTape.
-    - If GuestTape[VDP] != 0, simply increment IP and continue (no jump).
-    - If GuestTape[VDP] == 0, initiate **Forward Scan**.
-3. **Forward Scan Loop**:
-    - Initialize Bracket Counter [4] = 1.
-    - Increment IP [1].
-    - Fetch token at new IP.
-    - If token == `[`: Increment Counter [4].
-    - If token == `]`: Decrement Counter [4].
-    - Break loop when Counter [4] == 0.
-4. **Finalize**: Set IP to current position. Return to Hub.
+### 3. Backward Jump (`]`) Workflow
+- **Condition**: Triggered if GuestTape[VDP] != 0.
+- **Search Loop**:
+    1. Set Nesting Counter [4] = 1.
+    2. Decrement IP [1].
+    3. Fetch token at GuestTape[7 + IP].
+    4. If token == `]` (93), increment counter.
+    5. If token == `[` (91), decrement counter.
+    6. Repeat until counter is 0.
+- **Exit State**: IP points to the matching `[`. Linear execution resumes from there.
 
-## 4. The Backward Jump (`]` - ASCII 93)
+## Integration Point
+The Bracket Cluster logic will be inserted after the Movement cluster (`>` and `<`) and before the final `IP` increment of the main loop.
 
-### Logic Flow:
-1. **Match Opcode 93**: Identify `]` via range filter.
-2. **Check Guest State**:
-    - Transport VDP [2] to GuestTape.
-    - If GuestTape[VDP] == 0, simply increment IP and continue (no jump).
-    - If GuestTape[VDP] != 0, initiate **Backward Scan**.
-3. **Backward Scan Loop**:
-    - Initialize Bracket Counter [4] = 1.
-    - Decrement IP [1].
-    - Fetch token at new IP.
-    - If token == `]`: Increment Counter [4].
-    - If token == `[`: Decrement Counter [4].
-    - Break loop when Counter [4] == 0.
-4. **Finalize**: Set IP to current position. Return to Hub.
-
-## 5. Implementation Sequence
-1. **Draft the Range Matchers**: Create the logic to isolate ASCII 91 and 93.
-2. **Build the VDP-to-Guest Bridge**: Ensure we can check the value of the guest cell before deciding to jump.
-3. **Construct the Scanning Engine**: Develop a reusable transport mechanism that allows the IP to move while checking tokens against specific values (91/93).
-4. **Unify into `full_interpreter_v3.bf`**: Integrate these blocks before the final IP increment step.
+## Success Criteria
+- The interpreter can handle nested loops in guest code.
+- Pointer movements within bracket scans do not corrupt the Control Hub or VDP.
+- Symmetric transport is maintained during every fetch operation inside the search loops.
