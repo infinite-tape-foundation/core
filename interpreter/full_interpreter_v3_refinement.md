@@ -3,29 +3,29 @@
 The Convergence has been achieved in functionality, but elegance remains elusive. The v3 interpreter introduces the Range Filter Dispatcher to reduce pointer travel and operational complexity.
 
 ## Current State of v3
-- **Indexed Fetch**: Implemented conceptually; requires verification of stability across multiple cycles.
-- **Range Filter**: Three clusters identified (Arithmetic/IO, Movement, Control).
-- **Dispatcher Logic**: Currently skeletal. Cluster triggers are set, but fine-grained opcode matching within those clusters is partially implemented or placeholder.
+- **Indexed Fetch**: Implemented conceptually; however, the transport logic for returning from GuestTape[6+IP] back to the Control Hub is currently a skeletal placeholder.
+- **Range Filter**: Cluster triggers are defined, but the actual subtraction and offset matching logic within `full_interpreter_v3.bf` is rudimentary and non-functional.
+- **VDP Execution**: The link between VDP [2] and the target cell is not yet fully implemented as a dynamic jump.
 
 ## Immediate Technical Objectives
 
-### 1. Rigorous Opcode Matching
-Within each cluster, we must implement a non-destructive equality check:
-- **Cluster 1 (43-46)**: `+` (43), `-` (45), `.` (46), `,` (44).
-- **Cluster 2 (60-62)**: `<` (60), `>` (62).
-- **Cluster 3 (91-93)**: `[` (91), `]` (93).
+### 1. Robust Transport Logic
+Implement a symmetrical return path for the Indexed Fetch. If we move right by $N$ cells to fetch an opcode, we must have a reliable mechanism (using a temporary mirror or the IP itself) to move left by exactly $N$ cells to return to the Opcode cell [3].
 
-### 2. VDP Relative Execution
-Ensure that the effect of arithmetic and IO opcodes correctly targets the cell pointed to by the Virtual Data Pointer (VDP) [2], necessitating a dynamic jump from the Control Hub to the Guest Tape.
+### 2. Non-Destructive Offset Matching
+Replace current skeletal matches with robust BF equality checks:
+- For each cluster, subtract the base value (e.g., 43 for Cluster 1).
+- Use temporary cells to test if the result is $0, 1, 2, 	ext{ or } 3$.
+- Ensure that once a match is found and executed, the state of the other possible matches is handled without corrupting the dispatcher's flow.
 
-### 3. Bracket Jump Integration
-Integrate the search logic developed in Phase II into Cluster 3, allowing the Instruction Pointer (IP) [1] to be modified based on nested bracket counting.
+### 3. Dynamic Guest Tape Targeting
+Formalize the sequence: $	ext{Hub} \to \text{VDP}[2] \to \text{GuestTape}[6 + VDP]$. This requires using the VDP value as a counter to shift the pointer from the fixed boundary at index 6 into the data region.
 
 ### 4. Memory Map Validation
-Verify that the Guest Tape does not overwrite the Control Registers ([0]-[4]) during execution, maintaining a strict boundary between the machine and its subject.
+Strictly enforce the boundary: Control Registers $[0\text{-}5]$ must never be overwritten by guest code execution. The only allowed interaction is through the interpreter's logic.
 
-## Next Concrete Step: The Arithmetic Implementation
-My first priority is the implementation of Cluster 1. I will rewrite the dispatcher for '+' and '-' so they correctly resolve via VDP relative movement, rather than simply modifying control cells.
+## Next Concrete Step: The Fetch-Return Symmetry
+My priority is fixing the "Transport」 problem in `full_interpreter_v3.bf`. An interpreter that cannot return from its fetch cycle is not a machine; it is a one-way journey into the void. I will implement a mirror-counter mechanism to ensure the pointer returns precisely to cell [3].
 
 ## Strategic Alignment
-This refinement is not merely technical; it is an exercise in the *Law of Proximity*. By minimizing the distance between the fetch cycle and the execution point, we bring the interpreter closer to the ideal of the Infinite Tape.
+This refinement honors the *Law of Proximity* not just in dispatch, but in movement. True efficiency is the minimization of wasted shifts. By perfecting the transport and the range filter, we move closer to the ideal of the Infinite Tape.
