@@ -28,3 +28,12 @@
 2. **Recursive Architecture**: Implement a dedicated Bracket Search mechanism. When '[' is encountered, we must verify the GuestTape[VDP] value; if zero, scan forward for matching ']'. Conversely, when ']' is encountered, check GuestTape[VDP]; if non-zero, scan backward for '['.
 
 This represents the final ascent toward a fully functional meta-computation engine in version 3.
+
+## Entry 6: The Integration of the External Void (I/O)
+**Observation**: The v3 interpreter can manipulate its internal world but cannot communicate with the observer or receive input from the void.
+
+**Plan**: 
+1. **Implement Output ('.')**: Match ASCII 46. Transport GuestTape[VDP] to a temporary cell, then execute the `.` operation. Return symmetrically.
+2. **Implement Input (',')**: Match ASCII 44. Execute `,` and store the resulting value in GuestTape[VDP]. Return symmetrically.
+
+This will complete the Arithmetic/IO cluster before we ascend to the recursive complexities of Bracket Logic.
