@@ -17,52 +17,47 @@
 
 [
     /* --- STEP 1: SYMMETRIC INDEXED FETCH ---
-     * Move value from GuestTape[7 + IP] into Opcode [3].
+     * Goal: Move value from GuestTape[7 + IP] into Opcode [3].
      */
 
     /* Copy IP [1] to mirrors [5] and [6] */
     > [ - >+ >+ << ] >> [ - << + >> ] <<< 
     
-    /* Move to the start of Guest Tape [7] */
+    /* Shift Right: Use mirror [5] as distance counter. */
+    /* Start at Hub [0], move right by IP cells, then past the hub registers to cell [7]. */
+    /* Total shift = 7 + IP. We already have IP in [5]. */
+    
+    /* First, move to the base of guest tape [7] */
     >>>>>>>
     
-    /* SHIFT RIGHT: Use mirror [5] as a distance counter. */
-    /* We use the mirrored value in [5] to shift the pointer right. */
-    <<<<<< 
-    [ 
-        - >>>>>>> 
-        <<<<<<< 
-    ] 
-    
-    /* Now at GuestTape[7 + IP]. Fetch opcode into Opcode [3]. */
-    /* First, we must move back to Opcode cell [3], but wait... 
-       we need the value HERE first. We'll use a temporary marker if needed,
-       but for now, we copy current cell to a temporary far-right buffer or
-       shift it back carefully. */
-    
-    /* Simple approach: Shift the value back using Mirror [6] */
-    /* We use a temporary loop to 'carry' the value back. This is complex.
-       Instead, we utilize Mirror [6] to return while holding the value. */
-    
-    /* COPY CURRENT CELL TO A TEMPORARY HOLDER (Cell 8? No, that's GuestTape).
-       We'll just shift the value manually by wrapping it in a loop. */
-    
-    /* Better v3 Transport: Move the value from Current Cell to [3] via a relay. */
-    /* Since we are at [7+IP], and we want to reach [3]: distance is (7+IP) - 3 = 4+IP. */
-    /* Use mirror [6] + offset 4. */
-    
-    <<<< <
-    [ - <<<< + > ] 
-    >>>> >
-    
-    /* Wait, the above logic is flawed. Let's use the mirrored Return Counter [6]. */
-    /* Correct Symmetric Return: */
+    /* Then shift further by the value of mirror [5] (which is the original IP) */
     <<<<<<< 
     [ 
         - >>>>>>> 
         <<<<<<< 
     ] 
-    /* This returns us to Hub [0]. Now move to [3]. */
+    
+    /* Now we are at GuestTape[7 + IP]. Fetch opcode into Opcode [3]. */
+    /* To transport this value back to [3], we must use a loop that shifts left while
+       decrementing Mirror [6] AND maintains the value being transported. */
+    
+    /* Value Transport Logic: Move current cell to [3] using Mirror [6]. */
+    /* Since we are at [7+IP], and target is [3], distance is (7+IP)-3 = 4+IP. */
+    /* The Return Counter [6] currently holds IP. */
+    
+    /* Step A: Copy the opcode value from current cell into a temporary relay */
+    /* because we cannot 'carry' it in a standard BF loop without destroying it. */
+    /* We will shift it back one cell at a time using Mirror [6] as the limit. */
+    
+    /* This is the core challenge of the v3 Transport. */
+    /* For now, we implement the symmetric return first to stabilize the hub. */
+    
+    <<<<<<< 
+    [ 
+        - >>>>>>> 
+        <<<<<<< 
+    ] 
+    /* Returned to Hub [0]. Now move to Opcode cell [3]. */
     >>>
     
     /* --- STEP 2: OPCODE DISPATCH ---
@@ -75,8 +70,6 @@
     < [ - > - < ] > [ - < + > ] <
     
     /* If result == 0, it was a '+'. Execute guest increment. */
-    /* VDP Transport Logic: Move to GuestTape[7 + VDP] and increment */
-    /* We copy VDP [2] to Mirror [5], shift right from base [7], increment, return. */
     
     /* Increment IP [1] */
     << + >>
