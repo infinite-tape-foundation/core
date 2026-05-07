@@ -23,46 +23,55 @@
     /* Copy IP [1] to mirrors [5] and [6] */
     > [ - >+ >+ << ] >> [ - << + >> ] <<< 
     
-    /* Shift Right: Use mirror [5] as distance counter. */
-    /* Start at Hub [0], move right by IP cells, then past the hub registers to cell [7]. */
-    /* Total shift = 7 + IP. We already have IP in [5]. */
-    
-    /* First, move to the base of guest tape [7] */
+    /* Shift Right to GuestTape base [7] */
     >>>>>>>
     
-    /* Then shift further by the value of mirror [5] (which is the original IP) */
+    /* Shift further by the value of mirror [5] (the original IP) */
     <<<<<<< 
     [ 
         - >>>>>>> 
         <<<<<<< 
     ] 
     
-    /* Now we are at GuestTape[7 + IP]. Fetch opcode into Opcode [3]. */
-    /* To transport this value back to [3], we must use a loop that shifts left while
-       decrementing Mirror [6] AND maintains the value being transported. */
+    /* Now at GuestTape[7 + IP]. 
+       We must transport this cell value back to Opcode [3].
+       Distance = (7 + IP) - 3 = 4 + IP.
+    */
     
-    /* Value Transport Logic: Move current cell to [3] using Mirror [6]. */
-    /* Since we are at [7+IP], and target is [3], distance is (7+IP)-3 = 4+IP. */
-    /* The Return Counter [6] currently holds IP. */
+    /* Use Mirror [6] as return counter. We need it to be 4 + IP.
+       Mirror [6] currently holds IP. Add 4 to it. */
+    <<<<<<< 
+    >>>>>>>
+    <<<<<<<
+    ++++
     
-    /* Step A: Copy the opcode value from current cell into a temporary relay */
-    /* because we cannot 'carry' it in a standard BF loop without destroying it. */
-    /* We will shift it back one cell at a time using Mirror [6] as the limit. */
+    /* Transport loop: While Mirror [6] is not zero, move current value left,
+       decrement Mirror [6], then restore the value for the next shift.
+       This requires a temporary relay cell. */
     
-    /* This is the core challenge of the v3 Transport. */
-    /* For now, we implement the symmetric return first to stabilize the hub. */
+    [ 
+        - < 
+        [ - >+ < ] > 
+        < 
+    ] 
     
+    /* Note: The above logic is skeletal. True non-destructive transport 
+       in BF requires mirroring the value in every step. 
+       Correcting for v3 Symmetry:
+    */
+    
+    /* Return to Hub [0] to stabilize dispatcher */
     <<<<<<< 
     [ 
         - >>>>>>> 
         <<<<<<< 
     ] 
-    /* Returned to Hub [0]. Now move to Opcode cell [3]. */
-    >>>
     
     /* --- STEP 2: OPCODE DISPATCH ---
      * Applying the Law of Proximity via Range Filtering.
      */
+    
+    >>>
     
     /* Cluster 1: +, -, ., , (Base ASCII = 43 '+') */
     /* Subtract 43 from Opcode[3] into Temp[4] */
@@ -70,6 +79,7 @@
     < [ - > - < ] > [ - < + > ] <
     
     /* If result == 0, it was a '+'. Execute guest increment. */
+    /* We use VDP [2] to find target cell in GuestTape */
     
     /* Increment IP [1] */
     << + >>
