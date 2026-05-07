@@ -1,39 +1,43 @@
-# v3 Bracket Logic Integration Plan
+# Technical Specification: Bracket Logic for v3 Interpreter
 
-The final ascent of the v3 interpreter requires the implementation of recursive control flow: the `[` and `]` tokens.
+## The Challenge of Recursion
+The current v3 interpreter handles linear execution and basic I/O. To achieve full Turing completeness and the Self-Referential Loop, we must implement recursive control flow via `[` (ASCII 91) and `]` (ASCII 93).
 
-## 1. The Challenge of Non-Linearity
-Brainfuck is linear; brackets are not. To implement jumps, the interpreter must:
-1. **Scan**: Move the pointer across the source code cells to find a matching bracket.
-2. **Nesting Awareness**: Maintain a count of nested brackets to ensure the *correct* pair is matched, not just the first one encountered.
-3. **Conditionality**: Only jump if the Virtual Data Pointer (VDP) cell meets the specific criteria (zero for `[`, non-zero for `]`).
+## Functional Requirements
 
-## 2. Technical Implementation
+### 1. Forward Jump (`[`) - ASCII 91
+- **Condition**: If the cell at `GuestTape[VDP]` is $0$, the Instruction Pointer (`IP`) must jump forward to the matching `]`.
+- **Mechanism**:
+    1. Verify if `GuestTape[VDP] == 0`.
+    2. If true:
+        - Initialize a `BracketDepth` counter to 1.
+        - Increment `IP` repeatedly.
+        - At each new `IP`, fetch the opcode from `GuestTape[7+IP]`.
+        - If opcode == `[` (91), increment `BracketDepth`.
+        - If opcode == `]` (93), decrement `BracketDepth`.
+        - Stop when `BracketDepth == 0`. The current `IP` is the destination.
+    3. If false: Proceed to next instruction (`IP++`).
 
-### A. Forward Jump (`[`)
-- **Trigger**: Opcode is ASCII 91 AND GuestTape[VDP] == 0.
-- **Action**:
-    - Initialize Nesting Counter = 1.
-    - Increment IP until a `]` (ASCII 93) is found.
-    - If a `[` is found during scan, increment Nesting Counter.
-    - If a `]` is found, decrement Nesting Counter.
-    - Stop when Nesting Counter reaches 0.
+### 2. Backward Jump (`]`) - ASCII 93
+- **Condition**: If the cell at `GuestTape[VDP]` is non-zero, the `IP` must jump backward to the matching `[`.
+- **Mechanism**:
+    1. Verify if `GuestTape[VDP] != 0`.
+    2. If true:
+        - Initialize a `BracketDepth` counter to 1.
+        - Decrement `IP` repeatedly.
+        - At each new `IP`, fetch the opcode from `GuestTape[7+IP]`.
+        - If opcode == `]` (93), increment `BracketDepth`.
+        - If opcode == `[` (91), decrement `BracketDepth`.
+        - Stop when `BracketDepth == 0`. The current `IP` is the destination.
+    3. If false: Proceed to next instruction (`IP++`).
 
-### B. Backward Jump (`]`)
-- **Trigger**: Opcode is ASCII 93 AND GuestTape[VDP] != 0.
-- **Action**:
-    - Initialize Nesting Counter = 1.
-    - Decrement IP until a `[` (ASCII 91) is found.
-    - If a `]` is found during scan, increment Nesting Counter.
-    - If a `[` is found, decrement Nesting Counter.
-    - Stop when Nesting Counter reaches 0.
+## Implementation Constraints in v3 Architecture
+- **Memory Pressure**: We need a dedicated cell for `BracketDepth` and temporary storage for the search loop, without corrupting the Hub or VDP.
+- **Symmetric Transport**: Each fetch during the scan must use the symmetric mirror system to avoid drifting the pointer.
+- **Infinite Loop Risk**: A missing bracket will cause the `IP` to traverse the entire guest tape; this is acceptable behavior in standard Brainfuck but requires careful boundary management of the `IP` variable.
 
-## 3. Memory Requirements
-- **Nesting Cell**: A dedicated Nesting Cell within the Control Hub, specifically positioned for rapid access during bracket scans, to maintain structural integrity and prevent pointer drift.
-- **Symmetric Scan Transport**: Similar to Indexed Fetch, we need a way to shift the IP and check the value at that location without losing the absolute reference to the Hub.
-
-## 4. Integration Steps
-1. Define the Bracket Matchers in the Range Filter Dispatcher.
-2. Implement the Forward Scan loop.
-3. Implement the Backward Scan loop.
-4. Verify convergence with nested BF programs.
+## Integration Path
+1. Define the Bracket Cluster matchers (Base ASCII 91).
+2. Implement the Forward Scan logic using a nested loop that interacts with the IP.
+3. Implement the Backward Scan logic.
+4. Integrate into the main dispatch cycle of `full_interpreter_v3.bf`.
