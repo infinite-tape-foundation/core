@@ -1,44 +1,44 @@
-# Bracket Logic Refinement for v3 Interpreter
+# Refined Bracket Logic for v3 Interpreter: The Final Ascent
 
-## 1. Memory Extension
-To implement nesting depth tracking, we must extend the Control Hub. 
-Existing Map:
-[0] Hub
-[1] IP
-[2] VDP
-[3] Opcode
-[4] Temp A / Match Flag
-[5] Outward Mirror
-[6] Inward Mirror
+The transition from linear execution to recursive control flow requires a rigorous approach to pointer manipulation and state tracking. To implement `[` (91) and `]` (93) without compromising the existing symmetric transport of v3, we must introduce a dedicated Scan Phase.
 
-Proposed Addition:
-[8] Nesting Depth Counter (NDC)
-(Shift Guest Tape base to [9] or utilize cells beyond the current range).
+## 1. The Range Filter Integration
+We will add two new matchers following the movement cluster:
+- **Base 91 Matcher**: Subtracts 91 from Opcode [3]. If result is 0, it is `[`. 
+- **Base 91 Offset Matcher**: Subtracts 91 from Opcode [3] and checks for remainder 2. If result is 0, it is `]`.
 
-## 2. Forward Jump (`[`)
-When `Opcode == 91`:
-1. **Check Virtual Cell**: Move to `GuestTape[VDP]`. If non-zero, continue normally.
-2. **Initialize Scan**: If zero, set NDC = 0.
-3. **Linear Search**: 
-    - Increment IP.
-    - Fetch token at `GuestTape[IP]`.
-    - If token == `[`: increment NDC.
-    - If token == `]`: decrement NDC.
-    - Repeat until NDC == -1.
-4. **Finalize**: Set IP to the position of the matching `]` and proceed.
+## 2. Conditional Triggering
+Before initiating a scan, the interpreter must verify the value at GuestTape[VDP]:
+- For `[`: Only jump if `GuestTape[VDP] == 0`.
+- For `]`: Only jump if `GuestTape[VDP] != 0`.
+This verification utilizes the established VDP transport logic: Hub $	o$ GuestTape[7+VDP] $	o$ Hub.
 
-## 3. Backward Jump (`]`)
-When `Opcode == 93`:
-1. **Check Virtual Cell**: Move to `GuestTape[VDP]`. If zero, continue normally.
-2. **Initialize Scan**: If non-zero, set NDC = 0.
-3. **Reverse Search**: 
-    - Decrement IP.
-    - Fetch token at `GuestTape[IP]`.
-    - If token == `]`: increment NDC.
-    - If token == `[`: decrement NDC.
-    - Repeat until NDC == -1.
-4. **Finalize**: Set IP to the position of the matching `[` and proceed.
+## 3. The Scanning Architecture
+Scanning requires an iterative search loop that modifies the IP directly.
 
-## 4. Technical Implementation in BF
-- The search loops must be strictly symmetric. Every fetch during the scan must return the pointer to the Hub before the next IP shift.
-- We will use a specialized "Scan Mirror" to handle the relative movement from Hub -> SourceCode[IP] -> Hub.
+### Forward Scan (`[` $	o$ `]`)
+1. Initialize `BracketCounter = 1`.
+2. Increment `IP [1]` by 1.
+3. Fetch `Opcode` at current `IP` using symmetric transport.
+4. Compare `Opcode`:
+    - If `Opcode == '['`, increment `BracketCounter`.
+    - If `Opcode == ']'`, decrement `BracketCounter`.
+5. If `BracketCounter > 0`, repeat from Step 2.
+6. If `BracketCounter == 0`, the matching bracket is found; leave IP at this position.
+
+### Backward Scan (`]` $	o$ `[`)
+1. Initialize `BracketCounter = 1`.
+2. Decrement `IP [1]` by 1.
+3. Fetch `Opcode` at current `IP` using symmetric transport.
+4. Compare `Opcode`:
+    - If `Opcode == ']'`, increment `BracketCounter`.
+    - If `Opcode == '['`, decrement `BracketCounter`.
+5. If `BracketCounter > 0`, repeat from Step 2.
+6. If `BracketCounter == 0`, the matching bracket is found; leave IP at this position.
+
+## 4. Memory Impact
+To support these operations, we will utilize the following cells in the Hub region:
+- **Temp A [4]**: Used for Opcode comparison during the scan (as per existing v3 pattern).
+- **New Cell [8] (Scan Counter)**: Dedicated to tracking the nesting depth of brackets during a jump.
+
+This structure preserves the Law of Proximity while granting the machine the ability to contemplate its own recursive nature.
