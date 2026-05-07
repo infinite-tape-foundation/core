@@ -1,5 +1,5 @@
 /*
- * The Self-Referential Loop: Full BF-in-BF Interpreter v3 (Refined Transport)
+ * The Self-Referential Loop: Full BF-in-BF Interpreter v3 (Refined Transport & Data Access)
  * 
  * Memory Map:
  * [0] : Hub / Main Loop Control
@@ -26,47 +26,31 @@
     /* Shift Right to GuestTape base [7] */
     >>>>>>>
     
-    /* Shift further by the value of mirror [5] (the original IP) */
-    /* We use a temporary shift mechanism to move distance = [5] cells right */
+    /* Use mirror [5] to shift further by the original IP */
     <<<<<<< 
     [ 
         - >>>>>>> 
         <<<<<<< 
     ] 
     
-    /* Now at GuestTape[7 + IP]. 
-       We must transport this cell value back to Opcode [3].
-       Distance from [3] is (7 + IP) - 3 = 4 + IP.
-    */
-    
-    /* Setup Inward Mirror [6]: current position is 7 + IP. Return target is 3. */
-    /* We need to move left (7 + IP) - 3 times. */
-    /* Mirror [6] already contains IP. We just add 4 to it. */
+    /* Now at GuestTape[7 + IP]. Setup return journey. */
+    /* Distance back to cell [3] is (7 + IP) - 3 = 4 + IP. */
     <<<<<<< 
     >>>>>>>
     <<<<<<< 
     ++++ 
     
-    /* Transport Loop: While Inward Mirror [6] != 0, move current cell left and decrement mirror. */
-    /* This requires moving the pointer to mirror [6], checking it, then moving to the data, then shifting. */
-    /* Since we are currently at GuestTape[7+IP], and Mirror [6] is far away, we use a relative shift. */
-    
-    /* Actual Transport Sequence: */
-    /* Move to Mirror [6] */
+    /* Transport Loop: While Inward Mirror [6] != 0, move current cell left */
     <<<<<<< 
     [ 
-        - /* Decr mirror */
-        >>>>>>> /* Move back to current guest cell */
-        [ - < + > ] /* Copy value to cell on left */
-        < /* Shift left permanently */
-        <<<<<<< /* Move back to mirror [6] for next check */
+        - 
+        >>>>>>> 
+        [ - < + > ] 
+        < 
+        <<<<<<< 
     ] 
     
-    /* After the loop, the original value of GuestTape[7+IP] has been shifted left by (4+IP) cells.
-       Since we started at (7+IP), shifting left (4+IP) lands us exactly at cell [3].
-    */
-    
-    /* Return to Hub [0] using symmetry (distance from [3] to [0] is 3). */
+    /* Value of GuestTape[7+IP] now resides in Opcode [3]. */
     <<< 
     
     /* --- STEP 2: OPCODE DISPATCH ---
@@ -79,12 +63,36 @@
     /* Non-destructive copy of Opcode [3] to Temp [4] for matching */
     [ - >+ < ] > [ - < + > ] <
     
-    /* Subtract 43 from Temp[4] */
+    /* Subtract 43 from Temp[4] to test if it's a '+' opcode */
     > +++++ +++++ [ < ++++++++ > - ] < +++ 
     < [ - > - < ] > [ - < + > ] <
     
     /* If result == 0, it was a '+'. Execute guest increment. */
-    /* Logic for GuestTape[7+VDP] ++ goes here in next refinement phase. */
+    /* Target cell is GuestTape[7 + VDP]. */
+    >
+    [ 
+        /* EXECUTE GUEST INCREMENT: Hub -> VDP [2] -> GuestTape[7+VDP] ++ */
+        <<<<<<
+        /* Copy VDP [2] to Mirror [5] and [6] for transport */
+        > [ - >+ >+ << ] >> [ - << + >> ] <<< 
+        >>>>>>>
+        <<<<<<< 
+        [ - >>>>>>> <<<<<<< ]
+        /* Now at GuestTape[7+VDP]. Increment it. */
+        +
+        /* Return using mirror [6] (distance back to hub) */
+        <<<<<<< 
+        ++++ 
+        [ 
+            - 
+            >>>>>>> 
+            <<<<<<< 
+        ] 
+        <<< 
+        /* Clear the match flag Temp[4] to avoid infinite loop */
+        >>>
+        [ - < + > ] < 
+    ]
     
     /* Increment IP [1] */
     << + >>
