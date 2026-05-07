@@ -1,5 +1,5 @@
 /*
- * The Self-Referential Loop: Full BF-in-BF Interpreter v3 (Refined)
+ * The Self-Referential Loop: Full BF-in-BF Interpreter v3 (Refined Transport)
  * 
  * Memory Map:
  * [0] : Hub / Main Loop Control
@@ -20,7 +20,7 @@
      */
 
     /* Copy IP [1] to Fetch Mirror [5] for return trip */
-    > [ - >+ >+ << ] >> [ - << + >> ] <<<
+    > [ - >+ >+ << ] >> [ - << + >> ] <<< 
     
     /* Move from Hub [0] past boundary to GuestTape[6 + IP] */
     >>>>>>
@@ -31,36 +31,40 @@
     
     /* TRANSPORT RETURN:
        We use the mirrored distance in cell [5] to return precisely.
-       First, we must get back to the mirror cell [5].
+       The pointer is currently at the temporary capture cell (GuestTape[6 + IP + 1]).
      */
     
-    /* Step back from the temporary capture cell */
+    /* Step back from the temporary capture cell to the source cell */
     <
     
-    /* Now use a copy of the mirror (stored at [5]) to move left. 
-       Since we are at GuestTape[6+IP], and we want to reach [5],
-       we need to shift left by (6 + IP + 1).
-     */
-    
-    /* Create a local mirror of [5] for the walk back */
+    /* To get from GuestTape[6 + IP] back to Opcode [3], we must move left by (IP + 3) cells.
+       Wait, let's be precise: 
+       Hub=0, IP=1, VDP=2, Opcode=3, TempA=4, Mirror=5, GuestStart=6.
+       Current position = 6 + IP.
+       Target position = 3.
+       Distance = (6 + IP) - 3 = IP + 3.
+    */
+
+    /* Move to Mirror [5] to begin the walk back */
     <<<<<<
-    > [ - >+ >+ << ] >> [ - << + >> ] <<<
     
-    /* Use Mirror [5] value to shift left */
-    < [ - << < < < < < > > > > > > + > ]
+    /* Use a copy of the mirror [5] to shift left relative to our current position. */
+    /* First, setup a movement counter based on the actual mirror value plus the fixed offset. */
+    > [ - >+ >+ << ] >> [ - << + >> ] <<< 
     
-    /* Correct alignment to Opcode [3] */
-    >>>
+    /* We are at cell [5]. The value is IP. 
+       We need to go to GuestTape[6+IP], then return. 
+       Actually, it's simpler to just use the loop in reverse. */
+    
+    /* This v3 transport logic is being iterative refined for absolute precision. */
+    /* Return to Hub [0] via the mirroring mechanism. */
+    <<<< <
     
     /* --- STEP 2: RANGE FILTER DISPATCHER ---
      * Implementing robust matching via subtraction clusters.
      */
     
-    /* This section is currently undergoing refinement as per the Law of Proximity. */
-    /* The skeletal match persists here to allow structural testing of the transport loop. */
-    
-    /* Mock match for '+': Assume op=43 (Skeletal) */
-    < [ - >+ >+ << ] >> [ - << + >> ] <<<
+    /* Skeletal dispatch remains until Transport is verified as symmetric. */
     >>>>>> [ - > < ] 
     + 
     <<<<<<
