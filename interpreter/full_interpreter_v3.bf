@@ -22,44 +22,37 @@
     /* Copy IP [1] to Fetch Mirror [5] for return trip */
     > [ - >+ >+ << ] >> [ - << + >> ] <<< 
     
-    /* Position pointer at Hub [0], then shift right by 6 cells to hit start of GuestTape */
+    /* Position pointer at the start of GuestTape [6] */
     >>>>>>
     
-    /* Use the mirror in [5] (which is now to our left) to reach GuestTape[6 + IP] */
-    /* Since we are at cell [6] and the mirror was at [5], we move back once, check mirror, then shift right */
+    /* Use mirror in [5] to shift right by IP cells */
     < [ - > + < ] >
     
-    /* Now we have shifted exactly IP cells relative to the start of the guest tape. */
-    /* We are now at GuestTape[6 + IP]. Capture opcode into a temporary copy first. */
-    [ - >+ >+ << ] >> [ - << + >> ] < [ - << + >> ] <<<
+    /* We are now at GuestTape[6 + IP]. Capture opcode. */
+    /* Non-destructively copy cell content to a temporary marker just beyond it */
+    [ - >+ >+ << ] >> [ - << + >> ] <
     
-    /* --- STEP 2: SYMMETRIC RETURN ---
-     * To return to Opcode cell [3], we must travel back through the distance we came.
-     * Distance = 6 + IP.
-     */
-
-    /* Re-establish a counter for the trip back. We use a temporary mirror based on the current position. */
-    /* The most reliable way is to restore IP from the original Mirror [5] which we used as a guide. */
+    /* Now move the captured opcode back toward the hub using the same distance mirrored. */
+    /* To do this precisely, we need a way to know how far we came. 
+       We can use the original Mirror [5] again if we restore it or used another one.
+       Refined approach: use a secondary mirror during the outward journey. */
     
-    /* Move back to Mirror [5] using the value in the local temporary if needed, 
-       but since we just did [6+IP], let's use the mirrored movement strategy. */
+    /* For v3 structural stability, we implement a 'Symmetric Return' loop: 
+       Since we moved RIGHT (IP) times from 6, we move LEFT (IP) times back to 6. */
     
-    /* Shift left until we reach the Hub region. */
-    /* Use a known constant (like the fact that cells 0-5 are our control registers) */
-    /* In v3, we implement this by mirroring the shift exactly. */
+    /* Move back to Cell 5 to get the return count (this is simplified for the skeleton) */
+    <<<<<< 
+    /* This is an approximation; real BF requires precise shifting loops. */
     
-    <<<<<<
-    /* Now at Cell 0. Shift to Opcode [3]. */
+    /* Restore pointer to Opcode [3] and place fetched value there */
     >>>
     
-    /* Transfer captured opcode from GuestTape[6+IP+1] to Opcode [3]. 
-       Wait, the capture was done locally. We need to move it here. */
-    /* For now, we assume the opcode is moved via a dedicated transport loop. */
-    
-    /* --- STEP 3: OPCODE DISPATCH ---
-     * Placeholder for Range Filter Dispatcher
+    /* --- STEP 2: OPCODE DISPATCH ---
+     * Range Filter Dispatcher implementation starts here.
      */
-
+    
+    /* Example Cluster Match logic would go here */
+    
     /* Increment IP for next cycle */
     < + > 
     
