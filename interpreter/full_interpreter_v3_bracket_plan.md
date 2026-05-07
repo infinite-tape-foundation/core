@@ -1,48 +1,31 @@
-# Plan: Integrating Bracket Logic into v3 Interpreter
+# Implementation Plan: Bracket Logic for v3 Interpreter
 
-The current v3 interpreter handles linear operations (Arithmetic, I/O, Movement). To achieve full Turing completeness and the Great Convergence, we must implement recursive control flow via brackets `[` and `]`.
+The final frontier of the Self-Referential Loop is Recursive Control Flow. We must implement '[' (ASCII 91) and ']' (ASCII 93).
 
-## The Challenge of Non-Linearity
-In Brainfuck, `[` and `]` are not simple jumps; they require scanning the source code to find the matching counterpart while accounting for nested structures.
+## 1. The Forward Jump ([)
+**Trigger**: Opcode == 91 AND GuestTape[VDP] == 0.
+**Action**:
+1. Enter a scan loop starting from IP + 1.
+2. Maintain a nesting counter (Start at 1).
+3. For each cell encountered:
+    - If '[', increment counter.
+    - If ']', decrement counter.
+4. When counter reaches 0, set IP to current position.
+5. Return to Dispatch Hub.
 
-## Technical Specifications
+## 2. The Backward Jump (])
+**Trigger**: Opcode == 93 AND GuestTape[VDP] != 0.
+**Action**:
+1. Enter a scan loop starting from IP - 1.
+2. Maintain a nesting counter (Start at 1).
+3. For each cell encountered:
+    - If ']', increment counter.
+    - If '[', decrement counter.
+4. When counter reaches 0, set IP to current position.
+5. Return to Dispatch Hub.
 
-### 1. Forward Jump (`[`)
-- **Trigger**: Opcode is ASCII 91 (`[`).
-- **Condition**: If GuestTape[VDP] is 0, jump forward.
-- **Mechanism**:
-    1. Initialize a nesting counter to 1.
-    2. Increment Instruction Pointer (IP) by 1.
-    3. Loop until nesting counter is 0:
-        - Fetch opcode at GuestTape[7 + IP].
-        - If opcode == `[`, increment counter.
-        - If opcode == `]`, decrement counter.
-        - Increment IP.
-    4. Set IP to (result - 1), as the loop concludes after the final increment.
-
-### 2. Backward Jump (`]`)
-- **Trigger**: Opcode is ASCII 93 (`]`).
-- **Condition**: If GuestTape[VDP] is non-zero, jump backward.
-- **Mechanism**:
-    1. Initialize a nesting counter to 1.
-    2. Decrement Instruction Pointer (IP) by 1.
-    3. Loop until nesting counter is 0:
-        - Fetch opcode at GuestTape[7 + IP].
-        - If opcode == `]`, increment counter.
-        - If opcode == `[`, decrement counter.
-        - Decrement IP.
-    4. Set IP to (result + 1).
-
-## Integration into v3 Dispatcher
-
-Brackets belong in their own "Control Cluster" because they involve substantial pointer travel and conditional logic that differs from the arithmetic offsets used for `+` or `-`.
-
-- **Cluster 3: Control (Base 91)**
-    - Match 91 (`[`): Execute Forward Jump logic.
-    - Match 93 (`]`): Execute Backward Jump logic.
-
-## Implementation Sequence
-1. **Formalize Scan Primitive**: Create a BF snippet that can scan for a specific character while tracking depth.
-2. **Integrate Forward Jump**: Add the `[` matcher and jump loop to `full_interpreter_v3.bf`.
-3. **Integrate Backward Jump**: Add the `]` matcher and jump loop.
-4. **Stress Test**: Run nested loops (e.g., simple multiplication) within the interpreter.
+## 3. Technical Integration into v3
+- **Range Filter Update**: Add a new cluster for Brackets (Base ASCII = 91).
+- **Symmetric Transport**: Use the existing Fetch Mirror mechanism to read tokens during the scan.
+- **IP Manipulation**: Directly modify the Instruction Pointer [1] based on the scan result.
+- **State Preservation**: Ensure VDP and other Control Hub values remain intact during the search process.
