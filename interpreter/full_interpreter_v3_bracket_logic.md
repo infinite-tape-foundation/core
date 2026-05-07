@@ -1,37 +1,48 @@
 # Technical Specification: Bracket Logic for v3 Interpreter
 
-To achieve Turing completeness, the v3 interpreter must implement recursive control flow using `[` (ASCII 91) and `]` (ASCII 93).
+The implementation of brackets is the final stage in completing the Self-Referential Loop. We move from linear execution to recursive control flow.
 
-## The Control Cluster
-Brackets are grouped into the **Control Cluster** (Base ASCII 91).
+## 1. Memory Map Extension
+To implement bracket scanning without corrupting the Control Hub, we utilize a Nesting Counter:
+- `[0]` : Hub / Main Loop Control
+- `[1]` : Instruction Pointer (IP)
+- `[2]` : Virtual Data Pointer (VDP)
+- `[3]` : Current Opcode
+- `[4]` : Temp A / Match Flag
+- `[5]` : Outward Mirror (Fetch Counter)
+- `[6]` : Inward Mirror (Return Counter)
+- `[7]` : **Nesting Counter** (Used during scans)
+- `[8...]` : Guest Tape Workspace
 
-### Forward Jump (`[`)
-**Trigger**: Opcode matches 91.
-**Precondition**: GuestTape[VDP] == 0.
-**Operation**:
-1. Set `NestingCounter` = 1.
-2. Loop:
-   a. Increment IP.
-   b. Fetch opcode at `GuestTape[7 + IP]`.
-   c. If opcode == `[`, increment `NestingCounter`.
-   d. If opcode == `]`, decrement `NestingCounter`.
-   e. Exit loop if `NestingCounter` == 0.
-3. Final state: IP points to the cell immediately following the matching `]`.
+## 2. Forward Jump (`[` - ASCII 91)
 
-### Backward Jump (`]`)
-**Trigger**: Opcode matches 93.
-**Precondition**: GuestTape[VDP] != 0.
-**Operation**:
-1. Set `NestingCounter` = 1.
-2. Loop:
-   a. Decrement IP.
-   b. Fetch opcode at `GuestTape[7 + IP]`.
-   c. If opcode == `]`, increment `NestingCounter`.
-   d. If opcode == `[`, decrement `NestingCounter`.
-   e. Exit loop if `NestingCounter` == 0.
-3. Final state: IP points to the matching `[`.
+### Trigger Condition
+An opcode match for 91 occurs AND `GuestTape[VDP] == 0`.
 
-## Implementation Constraints in BF-in-BF
-- **Instruction Pointer (IP)** manipulation requires mirrored transport to avoid losing the hub position during scans.
-- **Comparison Logic**: Matching ASCII values (91, 93) requires subtraction against constants and checking for zero.
-- **The Nesting Counter**: Must be stored in a temporary cell that is preserved across iterations of the scan loop.
+### Execution Flow
+1. **Initialize Scan**: Set `Nesting Counter [7] = 1`. Increment `IP [1]` by 1.
+2. **Scan Loop** (while `Nesting Counter != 0`):
+    - Fetch token at `GuestTape[8 + IP]` using symmetric transport.
+    - If token == `[` (ASCII 91), increment `Nesting Counter [7]`.
+    - If token == `]` (ASCII 93), decrement `Nesting Counter [7]`.
+    - Increment `IP [1]`.
+3. **Finalize**: The final value of `IP [1]` is the destination. Decrement `IP [1]` by 1 to land exactly on the matching `]` (since the loop increments after the last match).
+
+## 3. Backward Jump (`]` - ASCII 93)
+
+### Trigger Condition
+An opcode match for 93 occurs AND `GuestTape[VDP] != 0`.
+
+### Execution Flow
+1. **Initialize Scan**: Set `Nesting Counter [7] = 1`. Decrement `IP [1]` by 1.
+2. **Scan Loop** (while `Nesting Counter != 0`):
+    - Fetch token at `GuestTape[8 + IP]` using symmetric transport.
+    - If token == `]` (ASCII 93), increment `Nesting Counter [7]`.
+    - If token == `[` (ASCII 91), decrement `Nesting Counter [7]`.
+    - Decrement `IP [1]`.
+3. **Finalize**: The final value of `IP [1]` is the destination. Increment `IP [1]` by 1 to land exactly on the matching `[`.
+
+## 4. Integration into Range Filter Dispatcher
+Brackets will be treated as a separate cluster with Base ASCII 91.
+- Match 91 $	o$ Execute Forward Jump Logic.
+- Match 93 $	o$ Execute Backward Jump Logic.
