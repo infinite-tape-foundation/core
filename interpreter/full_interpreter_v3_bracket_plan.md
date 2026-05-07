@@ -1,34 +1,43 @@
-# Implementation Plan: Bracket Logic for v3 Interpreter
+# Integration Plan: Recursive Control Flow for v3 Interpreter
 
-The final ascent toward a fully functional meta-computation engine requires the implementation of recursive control flow via `[` and `]` opcodes.
+The v3 interpreter currently handles the Arithmetic/IO cluster and Movement cluster. The final ascent is the implementation of Bracket Logic ('[' and ']').
 
-## 1. The Sacred Brackets
-- **`[` (ASCII 91)**: Forward Jump
-- **`]` (ASCII 93)**: Backward Jump
+## 1. Memory Map Audit (Existing)
+- [0]: Hub / Main Loop
+- [1]: Instruction Pointer (IP)
+- [2]: Virtual Data Pointer (VDP)
+- [3]: Current Opcode
+- [4]: Temp A / Match Flag
+- [5]: Outward Mirror
+- [6]: Inward Mirror
+- [7...]: Guest Tape
 
-## 2. The Logic of the Loop
-### A. Forward Jump (`[`)
-1. **Check Value**: Retrieve `GuestTape[VDP]`. 
-2. **Condition**: If value is non-zero, advance IP by 1 and continue normally.
-3. **Jump**: If value is zero:
-    - Scan forward in `GuestTape` starting from `IP + 1`.
-    - Maintain a nesting counter (increment on `[`, decrement on `]`).
-    - When the counter hits 0 and a `]` is encountered, set `IP` to that position.
+## 2. Forward Jump Logic ('[') - ASCII 91
+**Trigger**: `CurrentOpcode == 91` AND `GuestTape[7 + VDP] == 0` 
+**Action**: Scan forward in the source code to find the matching ']'.
+1. **Verification**: Fetch `GuestTape[7 + VDP]`. If non-zero, proceed to IP++.
+2. **The Search**: If zero, enter a search loop:
+    - Increment IP.
+    - Fetch new opcode.
+    - If it's '[', increment a nesting counter (stored in Temp).
+    - If it's ']', decrement nesting counter.
+    - Stop when nesting counter returns to zero and a ']' is found.
+3. **Resolution**: Set IP to the position of that matching ']'.
 
-### B. Backward Jump (`]`)
-1. **Check Value**: Retrieve `GuestTape[VDP]`. 
-2. **Condition**: If value is zero, advance IP by 1 and continue normally.
-3. **Jump**: If value is non-zero:
-    - Scan backward in `GuestTape` starting from `IP - 1`.
-    - Maintain a nesting counter (increment on `]`, decrement on `[`).
-    - When the counter hits 0 and a `[` is encountered, set `IP` to that position.
+## 3. Backward Jump Logic (']') - ASCII 93
+**Trigger**: `CurrentOpcode == 93` AND `GuestTape[7 + VDP] != 0` 
+**Action**: Scan backward in the source code to find the matching '['.
+1. **Verification**: Fetch `GuestTape[7 + VDP]`. If zero, proceed to IP++.
+2. **The Search**: If non-zero, enter a search loop:
+    - Decrement IP.
+    - Fetch new opcode.
+    - If it's ']', increment a nesting counter.
+    - If it's '[', decrement nesting counter.
+    - Stop when nesting counter returns to zero and a '[' is found.
+3. **Resolution**: Set IP to the position of that matching '['.
 
-## 3. Technical Integration into v3 Dispatcher
-- **Range Filter**: Brackets reside in the ASCII range 91-93. A new cluster match for Base 91 will be established.
-- **Symmetric Transport**: The scanning mechanism must use the same mirror system as the Fetch cycle to ensure the pointer returns to the Control Hub after updating the IP.
-- **Nesting State**: Use one of the temporary cells (e.g., Temp A [4]) to track the bracket nesting level during scans.
-
-## 4. Success Criteria
-- Ability to execute a simple loop: `++[>+<-]` (Copying a value).
-- Correct handling of nested loops.
-- No corruption of the Control Hub or Virtual Data Pointer during jumps.
+## 4. Implementation Strategy
+Since v3 uses Range Filtering, Brackets will be treated as their own cluster (Base 91).
+- Match ASCII 91 $	o$ Forward Jump logic.
+- Match ASCII 93 $	o$ Backward Jump logic.
+- The search loops must utilize the symmetric transport mechanism already established for indexed fetch to avoid corrupting the Hub.
