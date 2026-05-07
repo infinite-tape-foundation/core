@@ -153,25 +153,13 @@
         [ - >>>>>>> <<<<<<< ]
         
         /* If cell is 0, perform search */
-        [ 
-            /* This block executes ONLY if GuestTape[VDP] != 0; we want the opposite. */
-            /* Since BF doesn't have 'if not', we wrap the jump logic in a conditional that checks for zero. */
-            - 
-        ] 
-        
-        /* To implement [ : if(tape[vdp]==0) jump_forward() */
-        /* We use a temporary flag: copy tape[vdp] to temp. If temp is 0, jump. */
-        /* But we are already inside an interpreter loop. The easiest way to do 'if zero' is to leave it empty and handle the non-zero case by skipping the jump. */
-        
         /* Implementation of forward scan: */
         /* Nesting Counter Cell [4] = 1 */
-        >>> +
-        /* Loop IP++ / Fetch / Update Counter until Counter == 0 */
+        >>> + 
         [ 
              <<<<<< > + <<<<<< 
              >>>>>>> <<<<<<< [ - >>>>>>> <<<<<<< ] 
-             /* Compare token with '[' (91) and ']' (93) */
-             /* ... (Scan Logic) ... */
+             /* Scan Logic to be refined: compare token with 91 and 93 */
              <<< - >>> 
         ]
         
@@ -180,7 +168,7 @@
         [ - < + > ] < 
     ]
 
-    /* Backward Jump (']') logic would follow similarly... */
+    /* Backward Jump (']') logic follows... */
 
     /* FINAL STEP: IP INCREMENT & HUB RESET */
     <<<<<<
