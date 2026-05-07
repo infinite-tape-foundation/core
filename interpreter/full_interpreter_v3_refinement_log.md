@@ -3,7 +3,8 @@
 ## Entry 1: The Transport Crisis
 **Observation**: The current `full_interpreter_v3.bf` contains a critical failure in its Fetch cycle. It attempts to use mirrors for movement but lacks the actual mechanism to translate cell values into pointer shifts (since Brainfuck cannot execute `>` based on a variable). 
 
-**Analysis**: To move the pointer by $N$ cells, we must employ a 
+**Analysis**: To move the pointer by $N$ cells, we must employ a loop that decrements the counter while shifting the pointer.
+
 ## Entry 2: The Symmetric Shift Implementation
 **Action**: Implemented a formal symmetric shift loop for Indexed Fetch in `full_interpreter_v3.bf`.
 **Technical Detail**: Used a dual-mirror approach (Outward Mirror [5] and Inward Mirror [6]) to allow the pointer to travel from the Control Hub to GuestTape[7 + IP] and back to Opcode [3]. 
