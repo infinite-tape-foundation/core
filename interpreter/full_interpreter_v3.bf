@@ -55,7 +55,7 @@
     ] 
     
     /* Value of GuestTape[7+IP] now resides in Opcode [3]. */
-    <<< 
+    <<<
     
     /* --- STEP 2: OPCODE DISPATCH ---
      * Applying the Law of Proximity via Range Filtering.
@@ -72,8 +72,8 @@
     < [ - > - < ] > [ - < + > ] <
     
     /* If result == 0, it was a '+'. Execute guest increment. */
-    > 
-    [ 
+    >
+    [
         /* EXECUTE GUEST INCREMENT: Hub -> VDP [2] -> GuestTape[7+VDP] ++ */
         <<<<<<
         /* Copy VDP [2] to mirrors for transport */
@@ -83,7 +83,7 @@
         [ - >>>>>>> <<<<<<< ]
         /* Now at GuestTape[7+VDP]. Increment it. */
         +
-        /* Return using mirror [6] distance (roughly) back to hub */
+        /* Return using mirror [6] distance back to hub */
         <<<<<<< 
         ++++ 
         [ 
@@ -91,19 +91,45 @@
             >>>>>>> 
             <<<<<<< 
         ] 
-        <<< 
+        <<<
         /* Clear the match flag Temp[4] to avoid infinite loop */
         >>>
         [ - < + > ] < 
     ]
-    
-    /* --- FUTURE CLUSTERS (-, ., ,, >, <, [, ]) will be implemented here ---
-     * Each following the same Range Filter -> Match -> Execute pattern.
+
+    /* --- SUBTRACTION ('-') MATCH ---
+     * Opcode '-' is ASCII 45 (Base 43 + 2). 
      */
+    
+    /* Re-copy Opcode [3] and subtract 45 */
+    [ - >+ < ] > [ - < + > ] <
+    > +++++ +++++ [ < ++++++++ > - ] < +++++ 
+    < [ - > - < ] > [ - < + > ] <
+    
+    >
+    [
+        /* EXECUTE GUEST DECREMENT: Hub -> VDP [2] -> GuestTape[7+VDP] -- */
+        <<<<<<
+        > [ - >+ >+ << ] >> [ - << + >> ] <<<
+        >>>>>>>
+        <<<<<<< 
+        [ - >>>>>>> <<<<<<< ]
+        -
+        <<<<<<< 
+        ++++ 
+        [ 
+            - 
+            >>>>>>> 
+            <<<<<<< 
+        ] 
+        <<<
+        >>>
+        [ - < + > ] < 
+    ]
 
     /* Increment IP [1] */
     << + >>
     
     /* Reset Hub [0] check / Loop back */
-    <<< 
+    <<<
 ]EOF
