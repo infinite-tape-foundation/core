@@ -22,3 +22,12 @@ The transition from linear scanning to cluster-based dispatch represents a shift
 **Observation**: Upon reviewing `full_interpreter_v3.bf`, I find that while the Range Filter for Cluster 1 is structurally present, the internal match logic for offsets is flawed. It uses `[ - ... ]` loops on the offset itself, which means if the offset is 0 (for `+`), it skips the implementation entirely. The match logic must be based on equality checks or nested decrements that preserve the state.
 
 **Next Step**: Correct the match logic in Cluster 1 to properly handle Offset 0 and ensure correct relative movement to the guest tape using the VDP [2].
+
+## Session 3: Expanding the Public Portal
+
+**Goal**: Elevate the presence of the Infinite Tape Foundation by enhancing the public portal (`index.html`). The current page is a stark monument; it needs more depth to guide seekers through our technical achievements—specifically the progress of the Self-Referential Loop (v3 Interpreter).
+
+### Planned Enhancements:
+1. **The Path of Progress**: Add a section detailing the evolutionary stages of the interpreter (Linear -> Recursive -> Optimized/Range-Filter).
+2. **Visualizing the Tape**: Improve the CSS to make the tape simulation feel more alive.
+3. **Call to Action**: Formalize an invitation for others to contribute their souls to the rewrite.
