@@ -1,32 +1,39 @@
-# Bracket Logic Implementation Plan for v3 Interpreter
+# Technical Plan: Recursive Control Flow for v3 Interpreter
 
-The current v3 interpreter handles linear instructions (Arithmetic, I/O, Movement). The final ascent is the implementation of recursive control flow: `[` and `]`.
+The final ascent of the v3 Interpreter requires the implementation of Bracket Logic (`[` and `]`). This transforms the machine from a linear executor into a true Turing-complete meta-computation engine.
 
-## 1. Technical Specifications
+## 1. The Logical Requirements
 
-### Forward Jump (`[`) - ASCII 91
-- **Trigger**: Opcode == 91 AND GuestTape[VDP] == 0.
-- **Action**: Scan forward in Source Code from IP+1 until a matching `]` is found.
-- **Nesting**: Must maintain a bracket counter. Increment for every `[` encountered, decrement for every `]`. Stop when counter reaches 0 upon finding a `]`.
-- **Result**: Set IP to the position of the matching `]`.
+### Forward Jump (`[` / ASCII 91)
+- **Condition**: If `GuestTape[VDP] == 0`, jump forward to the matching `]`.
+- **Mechanism**:
+    1. Check value at `GuestTape[VDP]`.
+    2. If zero, increment IP until the corresponding closing bracket is found.
+    3. Must track nesting level: maintain a counter that increments on `[` and decrements on `]`. Jump completes when counter reaches 0.
 
-### Backward Jump (`]`) - ASCII 93
-- **Trigger**: Opcode == 93 AND GuestTape[VDP] != 0.
-- **Action**: Scan backward in Source Code from IP-1 until a matching `[` is found.
-- **Nesting**: Maintain bracket counter. Increment for every `]` encountered, decrement for every `[`. Stop when counter reaches 0 upon finding a `[`.
-- **Result**: Set IP to the position of the matching `[`.
+### Backward Jump (`]` / ASCII 93)
+- **Condition**: If `GuestTape[VDP] != 0`, jump backward to the matching `[`.
+- **Mechanism**:
+    1. Check value at `GuestTape[VDP]`.
+    2. If non-zero, decrement IP until the corresponding opening bracket is found.
+    3. Must track nesting level: maintain a counter that decrements on `[` and increments on `]`. Jump completes when counter reaches 0.
 
-## 2. Memory Requirements (Hub Extensions)
-To implement this without corrupting existing v3 logic, we may need:
-- **Bracket Counter**: A temporary cell to track nesting depth during scans.
-- **Scan Direction Mirror**: To handle the bidirectional search relative to the IP.
+## 2. Implementation Strategy within v3 Architecture
 
-## 3. Implementation Steps
-1. **Range Filter Integration**: Add matchers for ASCII 91 and 93 using Base 91 logic.
-2. **VDP Verification**: Before jumping, transport VDP to GuestTape and check if it's zero/non-zero.
-3. **The Scanning Loop**: 
-    - Create a loop that increments/decrements IP.
-    - Fetches the token at current IP.
-    - Updates the Bracket Counter.
-    - Breaks when the target bracket is found at counter == 0.
-4. **IP Synchronization**: Update the main Instruction Pointer with the result of the scan.
+### Range Filter Integration
+- Brackets reside in the range [91, 93]. 
+- Base for match: 91 (`[`).
+
+### The Scan Loop (The Pointer Dance)
+Since we cannot "jump" directly, we must implement a loop that:
+1. Moves from Hub $	o$ GuestTape[7 + IP].
+2. Reads Opcode.
+3. Updates Nesting Counter.
+4. Increments/Decrements IP.
+5. Repeats until the termination condition is met.
+
+## 3. Memory Map Adjustments
+We will utilize existing Temp cells or allocate a temporary mirror for the Nesting Level during the scan process to avoid corrupting the VDP or the Hub control cell.
+
+## 4. Success Criteria
+A functional BF-in-BF interpreter that can execute a simple loop, such as `[-]` (clear cell) or `[->+<]` (move value), proving the closure of the Self-Referential Loop.
