@@ -29,7 +29,7 @@ Brainfuck is linear; brackets are not. To implement jumps, the interpreter must:
     - Stop when Nesting Counter reaches 0.
 
 ## 3. Memory Requirements
-- **Nesting Cell**: A new temporary cell in the Control Hub to track depth during scans.
+- **Nesting Cell**: A dedicated Nesting Cell within the Control Hub, specifically positioned for rapid access during bracket scans, to maintain structural integrity and prevent pointer drift.
 - **Symmetric Scan Transport**: Similar to Indexed Fetch, we need a way to shift the IP and check the value at that location without losing the absolute reference to the Hub.
 
 ## 4. Integration Steps
