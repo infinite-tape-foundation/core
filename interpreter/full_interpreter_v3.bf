@@ -201,41 +201,36 @@
 
     >
     [
-        /* EXECUTE GUEST LEFT: Decrement VDP [2] */
-        <<<<
-        -
-        >>>>
-        /* Return path to hub via match clear */
+        /* EXECUTE GUEST RIGHT: VDP [2] ++ */
+        <<<<<<
+        > +
+        <<<<<<
+        >>>
         [ - < + > ] < 
     ]
 
-    /* Match '>': Subtract 60 and check for remainder 2 */
+    /* --- LEFT ('<') MATCH ---
+     * Opcode '<' is ASCII 60 (Base 60).
+     */
+
     [ - >+ < ] > [ - < + > ] <
     > +++++ +++++ [ < ++++++++ > - ] < ++++ +++++ +++++ +++
-    < [ - > - < ] > [ - < + > ] <
-    
-    /* To isolate the '2', we subtract 2 from the result in Temp [4] */
-    > ++
     < [ - > - < ] > [ - < + > ] <
 
     >
     [
-        /* EXECUTE GUEST RIGHT: Increment VDP [2] */
-        <<<<
-        +
-        >>>>
-        /* Return path to hub via match clear */
+        /* EXECUTE GUEST LEFT: VDP [2] -- */
+        <<<<<<
+        > -
+        <<<<<<
+        >>>
         [ - < + > ] < 
     ]
 
-    /* --- STEP 3: IP ADVANCEMENT ---
-     * Move Instruction Pointer (IP) forward by 1. 
+    /* --- STEP 3: IP INCREMENT & HUB RESET ---
+     * Move to next instruction and maintain hub loop.
      */
-    <<<<
-    >
-    +
-    <
-
-    /* Restore Hub [0] to continue loop */
-    >
+    <<<<<<
+    > +
+    <<<<<
 ]
