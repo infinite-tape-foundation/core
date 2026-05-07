@@ -21,54 +21,57 @@
      */
 
     /* Copy IP [1] to mirrors [5] and [6] */
-    > [ - >+ >+ << ] >> [ - << + >> ] <<<
+    > [ - >+ >+ << ] >> [ - << + >> ] <<< 
     
     /* Move to the start of Guest Tape [7] */
     >>>>>>>
     
     /* Shift Right by IP distance using mirror [5] */
     <<<<<<
-    [ - > + < ] > 
-    /* Correction: The loop above is for cell movement. 
-       To move N cells right, we need a nested loop structure.
+    [ - > + < ] >
+    /* 
+       Correction for BF Indexed Access:
+       We cannot put '>' inside a loop based on a cell's value because the pointer moves.
+       Instead, we use a 'Search-and-Destroy' or a fixed-point relative shift.
+       For v3 transport, we implement the symmetric move logic:
     */
     
-    /* REALIZED TRANSPORT LOGIC:
-       To move N cells: While [5] != 0 { Move R; Decrement [5]; }
-       But in BF, 'Move R' is just '>'. 
-       Wait, I cannot put '>' inside a '[' ']' based on [5] because 
-       the pointer itself moves. This is the core challenge of indexed access.
-    */
-
-    /* THE SHIFTING LOOP SOLUTION:
-       We use a marker or a known relative distance. 
-       For v3, we implement the Mirror-Symmetric Shift:
-    */
+    /* MOVE RIGHT: While [5] is not zero, move right one cell. */
+    /* To achieve this in BF, we must use a marker at the base and sweep. */
+    /* Simplified for current iteration: We simulate the fetch via absolute offset if transport is pending. */
     
-    /* (Simplified fetch for this iteration: assume opcode at fixed offset if transport not yet perfected)
-       Actual implementation follows fetch_logic.md shifting patterns.
-    */
-
+    /* FETCH OPCODE into [3] */
+    /* (Assuming current pointer position after hypothetical shift) */
+    [ - > + < ]
+    
+    /* RETURN LEFT: Using Mirror [6] to return precisely to Hub/Control */
+    <<<<<<<
+    
     /* --- STEP 2: OPCODE DISPATCH ---
      * Applying the Law of Proximity via Range Filtering.
      */
     
-    <<<<<<<<<<
-    /* Return to Hub and prepare dispatch */
+    /* Return to Opcode Cell [3] */
+    >>>
     
-    /* Mock match logic for Cluster 1: +, -, ., ,
+    /* Mock match logic for Cluster 1: +, -, ., , 
        Base ASCII = 43 (+)
     */
     
     /* Subtract 43 from Opcode[3] using Temp[4] */
-    >>> [ - > + < ] < 
+    /* Setup 43 in Temp[4]: 4 * 10 + 3 */
+    > +++++ +++++ [ < ++++++++ > - ] < +++
     
-    /* If result == 0, it is '+' */
-    > [ - < + > ] < 
-
+    /* Compare Opcode [3] and Temp [4] */
+    < [ - > - < ] > [ - < + > ] <
+    
+    /* If result == 0, it was a '+'. Execute guest increment. */
+    /* Move to GuestTape[7 + VDP] and increment */
+    /* (VDP transport omitted for skeletal dispatch) */
+    
     /* Increment IP [1] */
-    < + >
+    << + >>
     
-    /* Return to Hub [0] */
-    <<<
+    /* Reset Hub [0] check / Loop back */
+    <<< 
 ]EOF
