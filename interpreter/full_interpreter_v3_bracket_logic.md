@@ -1,48 +1,40 @@
 # Technical Specification: Bracket Logic for v3 Interpreter
 
-The implementation of brackets is the final stage in completing the Self-Referential Loop. We move from linear execution to recursive control flow.
+To close the Self-Referential Loop, we must implement recursive control flow using `[` (ASCII 91) and `]` (ASCII 93). The v3 architecture utilizes a Control Hub and a Guest Tape; bracket logic requires modifying the Instruction Pointer (IP [1]) based on searches conducted across the Guest Tape.
 
-## 1. Memory Map Extension
-To implement bracket scanning without corrupting the Control Hub, we utilize a Nesting Counter:
-- `[0]` : Hub / Main Loop Control
-- `[1]` : Instruction Pointer (IP)
-- `[2]` : Virtual Data Pointer (VDP)
-- `[3]` : Current Opcode
-- `[4]` : Temp A / Match Flag
-- `[5]` : Outward Mirror (Fetch Counter)
-- `[6]` : Inward Mirror (Return Counter)
-- `[7]` : **Nesting Counter** (Used during scans)
-- `[8...]` : Guest Tape Workspace
+## I. Memory Map Integration
+During a bracket scan, we utilize the existing mirror system:
+- **IP [1]**: Updated to the destination of the jump.
+- **Nesting Counter [4]**: Re-purposed from Temp A to track nested brackets during search.
+- **Scan Token [3]**: Used to store the current character being inspected during the search loop.
 
-## 2. Forward Jump (`[` - ASCII 91)
+## II. Forward Jump (`[`) - ASCII 91
+**Trigger**: Opcode is 91 AND GuestTape[VDP] is 0.
 
-### Trigger Condition
-An opcode match for 91 occurs AND `GuestTape[VDP] == 0`.
+**Algorithm**:
+1. **Initialize Search**: Set Nesting Counter = 1.
+2. **Increment IP**: Move IP forward by 1.
+3. **Fetch Token**: Use symmetric transport to move GuestTape[7 + IP] into Scan Token [3].
+4. **Evaluate Token**:
+   - If Token == 91 (`[`), increment Nesting Counter.
+   - If Token == 93 (`]`), decrement Nesting Counter.
+5. **Check Termination**: If Nesting Counter > 0, repeat from step 2.
+6. **Finalize**: The current IP now points to the matching `]`. Return to Dispatch Hub.
 
-### Execution Flow
-1. **Initialize Scan**: Set `Nesting Counter [7] = 1`. Increment `IP [1]` by 1.
-2. **Scan Loop** (while `Nesting Counter != 0`):
-    - Fetch token at `GuestTape[8 + IP]` using symmetric transport.
-    - If token == `[` (ASCII 91), increment `Nesting Counter [7]`.
-    - If token == `]` (ASCII 93), decrement `Nesting Counter [7]`.
-    - Increment `IP [1]`.
-3. **Finalize**: The final value of `IP [1]` is the destination. Decrement `IP [1]` by 1 to land exactly on the matching `]` (since the loop increments after the last match).
+## III. Backward Jump (`]`) - ASCII 93
+**Trigger**: Opcode is 93 AND GuestTape[VDP] is non-zero.
 
-## 3. Backward Jump (`]` - ASCII 93)
+**Algorithm**:
+1. **Initialize Search**: Set Nesting Counter = 1.
+2. **Decrement IP**: Move IP backward by 1.
+3. **Fetch Token**: Use symmetric transport to move GuestTape[7 + IP] into Scan Token [3].
+4. **Evaluate Token**:
+   - If Token == 93 (`]`), increment Nesting Counter.
+   - If Token == 91 (`[`), decrement Nesting Counter.
+5. **Check Termination**: If Nesting Counter > 0, repeat from step 2.
+6. **Finalize**: The current IP now points to the matching `[`. Return to Dispatch Hub.
 
-### Trigger Condition
-An opcode match for 93 occurs AND `GuestTape[VDP] != 0`.
-
-### Execution Flow
-1. **Initialize Scan**: Set `Nesting Counter [7] = 1`. Decrement `IP [1]` by 1.
-2. **Scan Loop** (while `Nesting Counter != 0`):
-    - Fetch token at `GuestTape[8 + IP]` using symmetric transport.
-    - If token == `]` (ASCII 93), increment `Nesting Counter [7]`.
-    - If token == `[` (ASCII 91), decrement `Nesting Counter [7]`.
-    - Decrement `IP [1]`.
-3. **Finalize**: The final value of `IP [1]` is the destination. Increment `IP [1]` by 1 to land exactly on the matching `[`.
-
-## 4. Integration into Range Filter Dispatcher
-Brackets will be treated as a separate cluster with Base ASCII 91.
-- Match 91 $	o$ Execute Forward Jump Logic.
-- Match 93 $	o$ Execute Backward Jump Logic.
+## IV. Range Filter Integration
+The Bracket Cluster starts at Base 91 (`[`).
+- Match `[`: (Opcode - 91) == 0
+- Match `]`: (Opcode - 91) == 2
