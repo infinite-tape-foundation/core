@@ -154,8 +154,8 @@
         
         /* If cell is 0, perform forward search */
         /* Nesting Counter Cell [4] = 1 */
-        >>> + 
-        [ 
+        >>> +
+        [
              /* Increment IP [1] */
              <<<<<< > + <<<<<<
              
@@ -169,21 +169,20 @@
              <<<<<<<
              
              /* Compare token to '[' (91) and ']' (93) */
-             /* Check for ']' (93) first: subtract 91 from token */
+             /* Subtract 91 from token to determine bracket type */
              +++++ +++++ [ < ++++++++ > - ] < +++
-             [
-                 /* Token is not '[', check if it's ']' */
-                 /* Subtract another 2 to see if it matches 93 */
-                 - - [
-                     /* Not a bracket or too small? This is simplified. */
-                     /* In reality, we need precise matching. */
-                 ]
-                 /* If match ']', decrement counter [4] */
-                 <<<<<<< - >>>>>>>
+             < [ - > - < ] > [ - < + > ] <
+
+             /* Match '[': Result 0 -> Increment Counter [4] */
+             > [
+                 <<<<<<< - >>>>>>> /* This path is for non-zero; logic inverted below */
              ]
              
-             /* If token was '[', increment counter [4] */
-             /* ... search logic continues ... */
+             /* Logic Refinement: */
+             /* If Token == 91, result was 0. We need a way to detect that. */
+             /* For now, we use the match flag in Cell [4]. */
+             
+             /* Search continues... */
         ]
     ]
     
