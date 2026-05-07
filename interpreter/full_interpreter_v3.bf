@@ -26,45 +26,32 @@
     >>>>>>
     
     /* Use the mirror in [5] (which is now at our left) to reach GuestTape[6 + IP] */
-    /* Note: we are at [6], mirror is at [5] */
     < [ - > < ] 
     
     /* We are now at GuestTape[6 + IP]. Capture opcode. */
-    /* To avoid destroying code, we copy the cell contents to a temporary shift cell */
-    [ - > + < ]
-    >
+    /* Non-destructive copy: [6+IP] -> [6+IP+1] and back to [6+IP] */
+    [ - >+ >+ << ] >> [ - << + >> ] < [ - << + >> ] <<<
     
-    /* TRANSPORT RETURN:
-       We are at GuestTape[6+IP+1].
-       To return to Opcode [3]:
-       1. Shift left once to [6+IP].
-       2. Move the value from [6+IP+1] back into [6+IP] conceptually? No.
-       3. We need to travel back IP + 7 cells left to hit Hub [0], then right 3.
-       
-       Wait, the most elegant way: while moving RIGHT during fetch, we leave a marker
-       or use a secondary counter that stays at the destination.
-       
-       Revised V3 Fetch Strategy:
-       A. Copy IP[1] to Temp [4].
-       B. Move from [0] to [6].
-       C. While Temp [4] > 0: move right, decrement [4].
-       D. Now at [6 + IP]. Copy value to a nearby temp [6 + IP + 1].
-       E. Move from [6 + IP + 1] back to [6] using a copy of IP stored in [6 + IP + 2].
-       
-       Actually, let's implement the 'Mirror-Shift' correctly:
-    */
-
-    /* From GuestTape[6+IP+1]: */
-    /* Let us use the fact that we can move the opcode value itself as a counter if it's non-zero,
-       but that's destructive. Instead, let's assume for now we just need to return to Hub.
-    */
-
-    <<<<<<<<< /* Skeletal return - needs precision loop based on Mirror [5] */
+    /* Now we use the mirrored copy at [6+IP+1] to travel back to Hub [0] */
+    /* First, create a temporary return counter from the copy we just made */
+    > [ - > + < ] >
+    
+    /* Move left until we hit cell [5], using the counter in [6+IP+2] */
+    /* However, since we know exactly how far we went (IP + 6), we can simply
+       re-use the original Mirror [5] if we didn't destroy it. 
+       Wait, let's be more robust: move left while mirroring. */
+    
+    /* Actual Return Logic: Move back to cell [0] by shifting left based on IP */
+    /* To do this safely, we shift left until we reach a known zero/marker or 
+       simply rely on the symmetry of the fetch move. */
+    
+    <<<<<<<<< /* Temporary skeletal jump; in final v3 this is replaced by mirror loop */
     
     /* --- STEP 2: OPCODE DISPATCH ---
-     * (To be implemented following Transport fix)
+     * Placeholder for Range Filter Dispatcher
      */
 
-    > + < /* Increment IP for next cycle */
-    < 
+    /* Increment IP for next cycle */
+    > + < 
+    <
 ]EOF
