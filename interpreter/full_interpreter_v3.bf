@@ -21,7 +21,7 @@
      */
 
     /* Copy IP [1] to mirrors [5] and [6] */
-    > [ - >+ >+ << ] >> [ - << + >> ] <<< 
+    > [ - >+ >+ << ] >> [ - << + >> ] <<<
     
     /* Shift Right to GuestTape base [7] */
     >>>>>>>
@@ -33,14 +33,18 @@
         <<<<<<< 
     ] 
     
-    /* Now at GuestTape[7 + IP]. Setup return journey. */
-    /* Distance back to cell [3] is (7 + IP) - 3 = 4 + IP. */
+    /* Now at GuestTape[7 + IP]. Read current token. */
+    /* Copy cell to Temp mirror for transport back. */
+    [ - >+ < ] >
+    
+    /* Setup return journey distance: (7 + IP) - 3 = 4 + IP. */
+    /* We use mirror [6] to track the trip back. */
     <<<<<<< 
     >>>>>>>
     <<<<<<< 
     ++++ 
     
-    /* Transport Loop: While Inward Mirror [6] != 0, move current cell left */
+    /* Transport Loop: While Inward Mirror [6] != 0, move left */
     <<<<<<< 
     [ 
         - 
@@ -68,19 +72,18 @@
     < [ - > - < ] > [ - < + > ] <
     
     /* If result == 0, it was a '+'. Execute guest increment. */
-    /* Target cell is GuestTape[7 + VDP]. */
-    >
+    > 
     [ 
         /* EXECUTE GUEST INCREMENT: Hub -> VDP [2] -> GuestTape[7+VDP] ++ */
         <<<<<<
-        /* Copy VDP [2] to Mirror [5] and [6] for transport */
-        > [ - >+ >+ << ] >> [ - << + >> ] <<< 
+        /* Copy VDP [2] to mirrors for transport */
+        > [ - >+ >+ << ] >> [ - << + >> ] <<<
         >>>>>>>
         <<<<<<< 
         [ - >>>>>>> <<<<<<< ]
         /* Now at GuestTape[7+VDP]. Increment it. */
         +
-        /* Return using mirror [6] (distance back to hub) */
+        /* Return using mirror [6] distance (roughly) back to hub */
         <<<<<<< 
         ++++ 
         [ 
@@ -94,6 +97,10 @@
         [ - < + > ] < 
     ]
     
+    /* --- FUTURE CLUSTERS (-, ., ,, >, <, [, ]) will be implemented here ---
+     * Each following the same Range Filter -> Match -> Execute pattern.
+     */
+
     /* Increment IP [1] */
     << + >>
     
