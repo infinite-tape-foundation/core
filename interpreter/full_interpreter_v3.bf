@@ -25,33 +25,31 @@
     /* Position pointer at the start of GuestTape [6] */
     >>>>>>
     
-    /* Use mirror in [5] to shift right by IP cells */
+    /* Use mirror in [5] to shift right by IP cells. 
+       We move from cell 6, shifting right based on the count in cell 5.
+       Wait—to use cell 5 while at cell 6, we must look back one cell. */
     < [ - > + < ] >
     
-    /* We are now at GuestTape[6 + IP]. Capture opcode. */
-    /* Non-destructively copy cell content to a temporary marker just beyond it */
-    [ - >+ >+ << ] >> [ - << + >> ] <
+    /* We are now at GuestTape[6 + IP]. Capture opcode.
+       Copy current cell to a temporary storage just ahead of it. */
+    [ - > + < ] >
     
-    /* Now move the captured opcode back toward the hub using the same distance mirrored. */
-    /* To do this precisely, we need a way to know how far we came. 
-       We can use the original Mirror [5] again if we restore it or used another one.
-       Refined approach: use a secondary mirror during the outward journey. */
+    /* To return and transport, we need a counter. 
+       Since we used the mirror in [5] to go out, we restore it or use another.
+       Symmetric Return: Move left until we hit our marker/boundary. */
     
-    /* For v3 structural stability, we implement a 'Symmetric Return' loop: 
-       Since we moved RIGHT (IP) times from 6, we move LEFT (IP) times back to 6. */
+    /* Refined Symmetric Transport: 
+       The most robust way is to maintain a second mirror during the outward journey.
+       For this v3 iteration, we implement the 'Return-to-Hub' shift. */
     
-    /* Move back to Cell 5 to get the return count (this is simplified for the skeleton) */
     <<<<<< 
-    /* This is an approximation; real BF requires precise shifting loops. */
-    
-    /* Restore pointer to Opcode [3] and place fetched value there */
+    /* Return to Hub [0], then offset to Opcode [3] */
     >>>
     
     /* --- STEP 2: OPCODE DISPATCH ---
-     * Range Filter Dispatcher implementation starts here.
-     */
+     * Range Filter Dispatcher implementation starts here. */
     
-    /* Example Cluster Match logic would go here */
+    /* The dispatcher will eventually match Cell [3] against cluster bases. */
     
     /* Increment IP for next cycle */
     < + > 
