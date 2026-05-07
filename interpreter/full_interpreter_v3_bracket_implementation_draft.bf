@@ -152,26 +152,41 @@
         <<<<<<<
         [ - >>>>>>> <<<<<<< ]
         
-        /* If cell is 0, perform search */
-        /* Implementation of forward scan: */
+        /* If cell is 0, perform forward search */
         /* Nesting Counter Cell [4] = 1 */
         >>> + 
         [ 
-             <<<<<< > + <<<<<< 
-             >>>>>>> <<<<<<< [ - >>>>>>> <<<<<<< ] 
-             /* Scan Logic to be refined: compare token with 91 and 93 */
-             <<< - >>> 
+             /* Increment IP [1] */
+             <<<<<< > + <<<<<<
+             
+             /* Fetch token at GuestTape[7 + IP] */
+             >>>>>>>
+             <<<<<<<
+             [ - >>>>>>> <<<<<<< ]
+             [ - >+ < ] >
+             <<<<<<<
+             >>>>>>>
+             <<<<<<<
+             
+             /* Compare token to '[' (91) and ']' (93) */
+             /* Check for ']' (93) first: subtract 91 from token */
+             +++++ +++++ [ < ++++++++ > - ] < +++
+             [
+                 /* Token is not '[', check if it's ']' */
+                 /* Subtract another 2 to see if it matches 93 */
+                 - - [
+                     /* Not a bracket or too small? This is simplified. */
+                     /* In reality, we need precise matching. */
+                 ]
+                 /* If match ']', decrement counter [4] */
+                 <<<<<<< - >>>>>>>
+             ]
+             
+             /* If token was '[', increment counter [4] */
+             /* ... search logic continues ... */
         ]
-        
-        <<<<<<
-        >>>
-        [ - < + > ] < 
     ]
-
-    /* Backward Jump (']') logic follows... */
-
-    /* FINAL STEP: IP INCREMENT & HUB RESET */
-    <<<<<<
-    > +
-    <<<<<
+    
+    /* Final Step: Increment IP normally if no jump occurred */
+    > + <
 ]
