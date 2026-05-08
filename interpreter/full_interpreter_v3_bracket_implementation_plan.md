@@ -1,36 +1,39 @@
 # Implementation Plan: v3 Bracket Logic Integration
 
-## Goal
-Integrate the recursive control flow (`[` and `]`) into the `full_interpreter_v3.bf` architecture to complete the Self-Referential Loop.
+## Objective
+Integrate recursive control flow (`[` and `]`) into the `full_interpreter_v3.bf` to complete the Self-Referential Loop.
 
-## 1. The Bracket Cluster Matcher
-We will use a range filter base of ASCII 91 (`[`).
-- Opcode - 91 = 0 $ightarrow$ `[` (Forward Jump)
-- Opcode - 91 = 2 $ightarrow$ `]` (Backward Jump)
+## Technical Mapping
 
-## 2. Forward Jump (`[`) Detail
-**Condition**: If Opcode == 91 AND GuestTape[VDP] == 0.
-**Execution**:
-1. Set Nesting Counter [4] = 1.
-2. Increment IP [1].
-3. Enter Search Loop:
-   - Fetch token at GuestTape[7 + IP].
-   - If token is `[`, increment counter.
-   - If token is `]`, decrement counter.
-   - Repeat until counter reaches 0.
-4. Final State: IP remains at matching `]` position.
+### 1. The Bracket Cluster Detection
+- **Base ASCII**: 91 (`[`)
+- **Matching logic**: Subtract 91 from Opcode [3].
+- **Result 0**: Forward Jump (`[`)
+- **Result 2**: Backward Jump (`]`)
 
-## 3. Backward Jump (`]`) Detail
-**Condition**: If Opcode == 93 AND GuestTape[VDP] != 0.
-**Execution**:
-1. Set Nesting Counter [4] = 1.
-2. Decrement IP [1].
-3. Enter Search Loop:
-   - Fetch token at GuestTape[7 + IP].
-   - If token is `]`, increment counter.
-   - If token is `[`, decrement counter.
-   - Repeat until counter reaches 0.
-4. Final State: IP remains at matching `[` position.
+### 2. Forward Jump (`[`) Logic
+**Condition**: If GuestTape[VDP] == 0, jump to matching `]`.
+- **Step A (Guard)**: Transport VDP value to Temp. If non-zero, skip jump (linear progress).
+- **Step B (Search)**: 
+    - Set Nesting Counter [4] = 1.
+    - While Nesting Counter != 0:
+        - Increment IP [1].
+        - Fetch token at GuestTape[7 + IP].
+        - If token == 91 (`[`), increment counter.
+        - If token == 93 (`]`), decrement counter.
+- **Step C (Finalize)**: IP now points to the matching bracket. Standard IP increment will move execution to the first instruction after the loop.
 
-## 4. Integration Point
-These blocks will be inserted into the dispatch loop in `full_interpreter_v3.bf` after the Movement cluster and before the final IP increment.
+### 3. Backward Jump (`]`) Logic
+**Condition**: If GuestTape[VDP] != 0, jump back to matching `[`.
+- **Step A (Guard)**: Transport VDP value to Temp. If zero, skip jump (linear progress).
+- **Step B (Search)**: 
+    - Set Nesting Counter [4] = 1.
+    - While Nesting Counter != 0:
+        - Decrement IP [1].
+        - Fetch token at GuestTape[7 + IP].
+        - If token == 93 (`]`), increment counter.
+        - If token == 91 (`[`), decrement counter.
+- **Step C (Finalize)**: IP now points to the matching `[`. The interpreter will then evaluate it normally as a Forward Jump check.
+
+## Integration Point
+Insert these blocks into `full_interpreter_v3.bf` immediately before the final IP increment step, ensuring that jumps modify the IP and bypass linear movement for that cycle.
