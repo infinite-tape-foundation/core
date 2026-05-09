@@ -1,43 +1,39 @@
-# Implementation Plan: v3 Bracket Logic Integration
+# Implementation Plan: Bracket Logic for v3 Interpreter
 
-## Goal (Updated)
-Integrated recursive control flow (brackets) into `full_interpreter_v3.bf` to complete the Self-Referential Loop. This is now a priority objective for the v3 convergence.
-Integrate recursive control flow (brackets) into `full_interpreter_v3.bf` to complete the Self-Referential Loop.
+To finalize the Self-Referential Loop, we must integrate recursive control flow into `full_interpreter_v3.bf`. 
 
-## Technical Strategy
+## 1. Range Filter Integration
+We will add a third cluster check after Movement (Base 60).
+- **Cluster Base**: 91 ('[')
+- **Matching logic**: Subtract 91 from Opcode [3].
+    - Result 0 $ightarrow$ Forward Jump (`[`)
+    - Result 2 $ightarrow$ Backward Jump (`]`)
 
-### 1. The Range Filter Expansion
-The current dispatcher handles ASCII 43-46 and 60-62. We must add a match for the Bracket Cluster (ASCII 91 '[' and 93 ']').
-- Match logic: Copy Opcode [3] $\rightarrow$ Temp [4]. Subtract 91. 
-- If Result == 0: Potential '[' jump.
-- If Result == 2: Potential ']' jump.
+## 2. The Forward Jump (`[`) Block
+**Precondition**: Match == 0 AND GuestTape[VDP] == 0.
 
-### 2. Forward Jump (`[`) Detail
-**Trigger**: Opcode is '[' AND GuestTape[VDP] is 0.
-**Execution Loop**:
-1. Set Nesting Counter (Cell [4]) = 1.
-2. Increment IP [1].
-3. Perform Symmetric Indexed Fetch: Transport GuestTape[7 + IP] $\rightarrow$ Opcode [3].
-4. Compare Opcode [3]:
-   - If '[' (91): Increment Counter [4].
-   - If ']' (93): Decrement Counter [4].
-5. Repeat while Counter [4] != 0.
-6. Final state: IP points to matching ']'.
+**Step-by-step BF implementation**:
+1. Initialize Nesting Counter in Temp [4]: `> + <` 
+2. While Nesting Counter != 0:
+    a. Increment IP [1]: `> + <` 
+    b. Perform Symmetric Fetch of GuestTape[7 + IP] into temporary cell X.
+    c. If token is '[' (91): Increment Nesting Counter.
+    d. If token is ']' (93): Decrement Nesting Counter.
+3. Exit loop when Nesting Counter reaches 0.
 
-### 3. Backward Jump (`]`) Detail
-**Trigger**: Opcode is ']' AND GuestTape[VDP] is NOT 0.
-**Execution Loop**:
-1. Set Nesting Counter (Cell [4]) = 1.
-2. Decrement IP [1].
-3. Perform Symmetric Indexed Fetch: Transport GuestTape[7 + IP] $\rightarrow$ Opcode [3].
-4. Compare Opcode [3]:
-   - If ']' (93): Increment Counter [4].
-   - If '[' (91): Decrement Counter [4].
-5. Repeat while Counter [4] != 0.
-6. Final state: IP points to matching '['.
+## 3. The Backward Jump (`]`) Block
+**Precondition**: Match == 2 AND GuestTape[VDP] != 0.
 
-## Integration Sequence
-1. Modify `full_interpreter_v3.bf` to include the Bracket Cluster match block after Movement matchers.
-2. Implement the Forward Jump logic block.
-3. Implement the Backward Jump logic block.
-4. Verify that these blocks occur before the final linear IP increment of the main loop, or explicitly manage the IP to avoid skipping characters after a jump.
+**Step-by-step BF implementation**:
+1. Initialize Nesting Counter in Temp [4]: `> + <` 
+2. While Nesting Counter != 0:
+    a. Decrement IP [1]: `> - <` 
+    b. Perform Symmetric Fetch of GuestTape[7 + IP] into temporary cell X.
+    c. If token is ']' (93): Increment Nesting Counter.
+    d. If token is '[' (91): Decrement Nesting Counter.
+3. Exit loop when Nesting Counter reaches 0.
+
+## 4. Critical Considerations
+- **Symmetric Transport Reuse**: We must use the established mirrors ([5], [6]) to perform fetches within the jump loops to avoid corrupting the Hub.
+- **IP Offset**: Ensure that after a jump, the standard IP increment at the end of the main loop does not skip an instruction unexpectedly (or adjust logic accordingly).
+- **VDP Access**: Checking GuestTape[VDP] requires transporting the VDP value from cell [2] to the guest tape and back to the hub for the conditional check.
