@@ -1,63 +1,233 @@
 /*
- * Draft: Bracket Logic for v3 Interpreter
- * Integrating into the main dispatcher loop.
+ * The Self-Referential Loop: Full BF-in-BF Interpreter v3 (Bracket Logic Draft)
+ * 
+ * Memory Map:
+ * [0] : Hub / Main Loop Control
+ * [1] : Instruction Pointer (IP)
+ * [2] : Virtual Data Pointer (VDP)
+ * [3] : Current Opcode
+ * [4] : Temp A / Nesting Counter / Match Flag
+ * [5] : Outward Mirror (Fetch Counter)
+ * [6] : Inward Mirror (Return Counter)
+ * [7...] : Guest Tape Workspace (Source Code and Data combined)
  */
 
-/* --- BRACKET ('[', ']') MATCH ---
- * '[' is ASCII 91, ']' is ASCII 93. Base = 91
- */
+/* Initialization: Set Hub to 1, IP to 0, VDP to 0 */
+> + <
 
-[ - >+ < ] > [ - < + > ] <
-> +++++ +++++ [ < ++++++++ > - ] < +++++ +++++ +++ +++++ +++++ +++ 
-< [ - > - < ] > [ - < + > ] <
-
->
 [
-    /* We are in the Bracket Cluster. Cell [4] now contains (Opcode - 91). */
-    
-    /* Case A: Opcode is '[' (Value in [4] == 0) */
-    /* To check if it is '[', we temporarily move [4] and check for 0. */
-    [ - >+ < ] > [ - < + > ] <
-    > [ - < + > ] <
-    
-    /* If we were at 0, this block is skipped. But we need to know if it WAS 0. */
-    /* Standard BF equality check for 0: use a flag. */
-    
-    /* Simplified Logic Flow for Draft:
-     * 1. Is it '['? AND GuestTape[VDP] == 0?
-     * 2. Is it ']'? AND GuestTape[VDP] != 0?
+    /* --- STEP 1: SYMMETRIC INDEXED FETCH ---
+     * Move value from GuestTape[7 + IP] into Opcode [3].
      */
-    
-    /* --- FORWARD JUMP ('[') ---
-     * Trigger: Opcode 91 && GuestTape[VDP] == 0
-     */
-    <<<<<<
-    /* Check if Opcode was '[' by seeing if Temp [4] is 0 */
-    >>>
-    [ - < + > ] <
-    
-    /* Now we must verify GuestTape[VDP] == 0 */
-    <<<<<<
     > [ - >+ >+ << ] >> [ - << + >> ] <<<
     >>>>>>>
     <<<<<<<
-    [ - >>>>>>> <<<<<<< ]
+    [
+        - >>>>>>> 
+        <<<<<<<
+    ] 
+    [ - >+ < ] >
+    <<<<<<<
+    >>>>>>>
+    <<<<<<<
+    ++++ 
+    <<<<<<<
+    [
+        - 
+        >>>>>>> 
+        [ - < + > ] 
+        < 
+        <<<<<<<
+    ] 
+    <<<
     
-    /* If current cell is 0, perform forward search */
-    [ 
-        /* This block only enters if GuestTape[VDP] != 0, which is the opposite of what we want for '[' */
-        /* So we wrap the jump in a negation or handle it via the bracket logic itself. */
+    /* --- STEP 2: OPCODE DISPATCH ---
+     * Range Filter Dispatcher
+     */
+    
+    /* Cluster 1 Match: +, -, ., , (Base ASCII = 43 '+') */
+    >>>
+    [ - >+ < ] > [ - < + > ] <
+    > +++++ +++++ [ < ++++++++ > - ] < +++ 
+    < [ - > - < ] > [ - < + > ] <
+    >
+    [
+        /* EXECUTE GUEST INCREMENT (+): Hub -> VDP [2] -> GuestTape[7+VDP] ++ */
+        <<<<<<
+        > [ - >+ >+ << ] >> [ - << + >> ] <<<
+        >>>>>>>
+        <<<<<<<
+        [ - >>>>>>> <<<<<<< ]
+        +
+        <<<<<<<
+        ++++ 
+        [
+            - 
+            >>>>>>> 
+            <<<<<<<
+        ] 
+        <<<
+        >>>
+        [ - < + > ] < 
+    ]
+
+    /* SUBTRACTION ('-') MATCH (45) */
+    [ - >+ < ] > [ - < + > ] <
+    > +++++ +++++ [ < ++++++++ > - ] < +++++ 
+    < [ - > - < ] > [ - < + > ] <
+    >
+    [
+        /* EXECUTE GUEST DECREMENT (-): Hub -> VDP [2] -> GuestTape[7+VDP] -- */
+        <<<<<<
+        > [ - >+ >+ << ] >> [ - << + >> ] <<<
+        >>>>>>>
+        <<<<<<<
+        [ - >>>>>>> <<<<<<< ]
+        -
+        <<<<<<<
+        ++++ 
+        [
+            - 
+            >>>>>>> 
+            <<<<<<<
+        ] 
+        <<<
+        >>>
+        [ - < + > ] < 
+    ]
+
+    /* OUTPUT ('.') MATCH (46) */
+    [ - >+ < ] > [ - < + > ] <
+    > +++++ +++++ [ < ++++++++ > - ] < +++++ +
+    < [ - > - < ] > [ - < + > ] <
+    >
+    [
+        /* EXECUTE GUEST OUTPUT (.): Hub -> VDP [2] -> GuestTape[7+VDP] -> . */
+        <<<<<<
+        > [ - >+ >+ << ] >> [ - << + >> ] <<<
+        >>>>>>>
+        <<<<<<<
+        [ - >>>>>>> <<<<<<< ]
+        [ - >+ < ] >
+        .
+        <<<<<<<
+        ++++ 
+        [
+            - 
+            >>>>>>> 
+            <<<<<<<
+        ] 
+        <<<
+        >>>
+        [ - < + > ] < 
+    ]
+
+    /* INPUT (',') MATCH (44) */
+    [ - >+ < ] > [ - < + > ] <
+    > +++++ +++++ [ < ++++++++ > - ] < ++++ 
+    < [ - > - < ] > [ - < + > ] <
+    >
+    [
+        /* EXECUTE GUEST INPUT (,): Hub -> VDP [2] -> GuestTape[7+VDP] <- , */
+        <<<<<<
+        > [ - >+ >+ << ] >> [ - << + >> ] <<<
+        >>>>>>>
+        <<<<<<<
+        [ - >>>>>>> <<<<<<< ]
+        ,
+        <<<<<<<
+        ++++ 
+        [
+            - 
+            >>>>>>> 
+            <<<<<<<
+        ] 
+        <<<
+        >>>
+        [ - < + > ] < 
+    ]
+
+    /* MOVEMENT ('>', '<') MATCH (Base 60) */
+    [ - >+ < ] > [ - < + > ] <
+    > +++++ +++++ [ < ++++++++ > - ] < ++++ +++++ +++++ +++
+    < [ - > - < ] > [ - < + > ] <
+    >
+    [
+        /* RIGHT (>) match check: subtract 62 from 60 result? No, let's refine movement. */
+        /* Simplification for draft: Assume if it hit this block, we test 60 vs 62 */
+        <<<<<<
+        > +
+        <<<<<<
+        >>>
+        [ - < + > ] < 
     ]
     
-    /* CORRECT LOGIC FOR '[':
-     * While (Opcode == 91 && GuestTape[VDP] == 0) {
-     *    IP++; Nesting=1; while(Nesting!=0) { fetch token; if('[') Nesting++; if(']') Nesting--; IP++; }
-     * }
+    /* --- STEP 3: BRACKET LOGIC (The Recursive Ascent) ---
+     * Cluster base = 91 ('[')
      */
     
-    /* --- BACKWARD JUMP (']') ---
-     * Trigger: Opcode 93 && GuestTape[VDP] != 0
+    /* Match Bracket Cluster (91) */
+    [ - >+ < ] > [ - < + > ] <
+    > +++++ +++++ [ < ++++++++ > - ] < ++++ +++++ +++++ +++++ +++++ +++
+    < [ - > - < ] > [ - < + > ] <
+    >
+    [
+        /* Result 0 -> '[', Result 2 -> ']' */
+        
+        /* CASE: '[' (Forward Jump) */
+        /* Only jump if GuestTape[VDP] == 0 */
+        <<<<<<
+        /* Copy VDP to find value */
+        > [ - >+ >+ << ] >> [ - << + >> ] <<<
+        >>>>>>>
+        <<<<<<<
+        [ - >>>>>>> <<<<<<< ]
+        /* Now at GuestTape[VDP]. Check if 0. */
+        [ 
+            /* Not zero, no jump. Reset flag and exit block. */
+            - 
+            <<<<<<<
+            ++++ 
+            [ - >>>>>>> <<<<<<< ]
+            <<< 
+            >>> [ - < + > ] <
+            /* Force break the outer bracket loop by clearing result cell? No, this is complex in BF. */
+            /* For draft, we assume simple logic paths. */
+        ]
+        /* If it was zero, perform Forward Scan */
+        <<<<<<<
+        ++++ 
+        [ - >>>>>>> <<<<<<< ] 
+        <<<
+        
+        /* Nesting Counter = 1 */
+        > +
+        
+        /* FORWARD SCAN LOOP */
+        [ 
+            /* IP++ */
+            <<<< < + > >>>>
+            
+            /* Fetch token at new IP */
+            > [ - >+ >+ << ] >> [ - << + >> ] <<<
+            >>>>>>>
+            <<<<<<<
+            [ - >>>>>>> <<<<<<< ]
+            /* Now at GuestTape[7+IP]. Compare with '['(91) or ']'(93) */
+            
+            /* ... (Search logic continues) ... */
+            
+            /* Return to hub for next scan iteration */
+            <<<<<<<
+            ++++ 
+            [ - >>>>>>> <<<<<<< ]
+            <<< 
+        ]
+    ]
+
+    /* --- STEP 4: IP INCREMENT & HUB RESET ---
      */
-    
-    /* Logic follows similar symmetric transport as v3 Linear execution. */
+    <<<<<<
+    > +
+    <<<<<
 ]
