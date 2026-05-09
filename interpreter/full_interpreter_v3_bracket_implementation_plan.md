@@ -1,41 +1,49 @@
-# Implementation Plan: v3 Bracket Logic (The Great Ascent)
+# Implementation Plan: v3 Bracket Logic Integration
 
-The v3 Interpreter currently handles Arithmetic and I/O clusters using symmetric transport. We must now integrate the Recursive Control Flow cluster: '[' (ASCII 91) and ']' (ASCII 93).
+This document details the step-by-step insertion of recursive control flow into `full_interpreter_v3.bf`.
 
-## Technical Specifications
+## 1. The Target Location
+The bracket logic must be inserted after the Movement Cluster (ASCII 60, 62) and before the final Instruction Pointer (IP) increment at the end of the main loop.
 
-### 1. The Forward Jump ('[')
-**Condition**: If GuestTape[VDP] == 0, jump to matching ']'.
-**Mechanism**:
-1. **Check VDP Cell**: Transport from Hub $\to$ GuestTape[7+VDP].
-2. **Evaluate**: If non-zero, continue execution (IP++).
-3. **Scan Forward**: If zero, move IP forward starting from current position.
-4. **Nesting Counter**: Maintain a counter in Scratch A [4]. Increment for every '[' encountered, decrement for every ']' encountered.
-5. **Termination**: When counter reaches 0 and current char is ']', set IP to this position.
+## 2. Range Filtering for Brackets
+Brackets reside in the range ASCII 91 (`[`) to 93 (`]`).
+- **Base**: 91
+- **Offset 0**: `[` 
+- **Offset 2**: `]`
 
-### 2. The Backward Jump (']')
-**Condition**: If GuestTape[VDP] != 0, jump back to matching '['.
-**Mechanism**:
-1. **Check VDP Cell**: Transport from Hub $\to$ GuestTape[7+VDP].
-2. **Evaluate**: If zero, continue execution (IP++).
-3. **Scan Backward**: Move IP backward from current position.
-4. **Nesting Counter**: Maintain counter in Scratch A [4]. Increment for every ']' encountered, decrement for every '[' encountered.
-5. **Termination**: When counter reaches 0 and current char is '[', set IP to this position.
+Matching sequence:
+1. Copy Opcode [3] $\rightarrow$ Temp [4].
+2. Subtract 91 from Temp [4].
+3. If result == 0 $\rightarrow$ Handle Forward Jump.
+4. If result == 2 $\rightarrow$ Handle Backward Jump.
 
-## Integration into v3 Architecture
+## 3. Forward Jump (`[`) Logic Flow
+**Condition**: `Opcode == '['` AND `GuestTape[VDP] == 0`.
 
-### Range Filtering
-- Brackets occupy the ASCII range 91-93.
-- Base Match: Subtract 91 from Opcode [3].
-- Offset 0 = '['
-- Offset 2 = ']'
+**Execution steps**:
+1. Set Nesting Counter Cell [4] = 1.
+2. Enter Loop:
+    a. Increment IP [1].
+    b. Fetch Token from `GuestTape[7 + IP]` into a temporary register.
+    c. If Token == `[`: Increment Nesting Counter [4].
+    d. If Token == `]`: Decrement Nesting Counter [4].
+    e. Exit loop if Nesting Counter [4] == 0.
+3. Final state: IP is at the matching `]`.
 
-### Memory Map Impact
-- Use `Scratch A [4]` as the nesting depth counter.
-- Ensure the search loop does not destroy the Control Hub state.
+## 4. Backward Jump (`]`) Logic Flow
+**Condition**: `Opcode == ']'` AND `GuestTape[VDP] != 0`.
 
-## Execution Sequence
-1. Implement Bracket Cluster dispatcher logic in `full_interpreter_v3.bf`.
-2. Integrate Forward Jump scan loop.
-3. Integrate Backward Jump scan loop.
-4. Validate with a simple loop program (e.g., `+++[>+++++++<-]>++.`).
+**Execution steps**:
+1. Set Nesting Counter Cell [4] = 1.
+2. Enter Loop:
+    a. Decrement IP [1].
+    b. Fetch Token from `GuestTape[7 + IP]` into a temporary register.
+    c. If Token == `]`: Increment Nesting Counter [4].
+    d. If Token == `[`: Decrement Nesting Counter [4].
+    e. Exit loop if Nesting Counter [4] == 0.
+3. Final state: IP is at the matching `[`.
+
+## 5. Verification and Integration
+- Ensure the VDP check correctly reads from the guest tape using the symmetric transport mechanism established for Arithmetic operations.
+- Verify that the IP updates are persistent across the jump.
+- Once implemented, this completes the v3 Interpreter's functionality, achieving full self-referential convergence with optimized dispatch.
