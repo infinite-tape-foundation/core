@@ -6,7 +6,7 @@
  * [1] : Instruction Pointer (IP)
  * [2] : Virtual Data Pointer (VDP)
  * [3] : Current Opcode
- * [4] : Temp A / Match Flag
+ * [4] : Temp A / Match Flag / Nesting Counter
  * [5] : Outward Mirror (Fetch Counter)
  * [6] : Inward Mirror (Return Counter)
  * [7...] : Guest Tape Workspace (Source Code and Data combined)
@@ -34,11 +34,9 @@
     ] 
     
     /* Now at GuestTape[7 + IP]. Read current token. */
-    /* Copy cell to Temp mirror for transport back. */
     [ - >+ < ] >
     
     /* Setup return journey distance: (7 + IP) - 3 = 4 + IP. */
-    /* We use mirror [6] to track the trip back. */
     <<<<<<<
     >>>>>>>
     <<<<<<<
@@ -190,47 +188,47 @@
         [ - < + > ] < 
     ]
 
-    /* --- MOVEMENT ('>', '<') MATCH ---
-     * '>' is ASCII 62, '<' is ASCII 60. Base = 60 ('<')
+    /* --- MOVEMENT ('<', '>') CLUSTER ---
+     * Base = 60 ('<')
      */
     
-    /* Re-copy Opcode [3] and subtract 60 */
     [ - >+ < ] > [ - < + > ] <
     > +++++ +++++ [ < ++++++++ > - ] < ++++ +++++ +++++ +++
     < [ - > - < ] > [ - < + > ] <
-
+    
+    /* Temp [4] now contains distance from '<' (60). Result: 0 for '<', 2 for '>' */
     >
     [
-        /* EXECUTE GUEST RIGHT: VDP [2] ++ */
-        <<<<<<
-        > +
-        <<<<<<
-        >>>
-        [ - < + > ] < 
+        /* If non-zero, it must be '>'. Execute Guest Move Right. */
+        <<<<<
+        +
+        >>>>>
+        /* Clear current match flag cell to prevent double execution */
+        [ - < + > ] <
     ]
-
-    /* --- LEFT ('<') MATCH ---
-     * Opcode '<' is ASCII 60 (Base 60).
-     */
-
+    
+    /* Handle '<': We check if our previous '>' block didn't execute. */
+    <<<<
     [ - >+ < ] > [ - < + > ] <
-    > +++++ +++++ [ < ++++++++ > - ] < ++++ +++++ +++++ +++
-    < [ - > - < ] > [ - < + > ] <
-
+    > +++++ +++++ [ < ++++++++ > - ] < ++++ 
+    < [ - > - < ] > [ - < + > ] < 
     >
+    [ - ]
+    < 
     [
-        /* EXECUTE GUEST LEFT: VDP [2] -- */
-        <<<<<<
-        > -
-        <<<<<<
-        >>>
-        [ - < + > ] < 
+        /* This executes ONLY if Temp[4] was 0 ('<') */
+        <<<<<
+        -
+        >>>>>
+        >>> [ - < + > ] <
     ]
 
-    /* --- STEP 3: IP INCREMENT & HUB RESET ---
-     * Move to next instruction and maintain hub loop.
+    /* --- STEP 3: IP ADVANCEMENT ---
+     * Linear increment of the Instruction Pointer. 
      */
-    <<<<<<
-    > +
-    <<<<<
+    <<
+    + 
+
+    /* Return to Hub Control [0] */
+    <<<<
 ]
